@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Atlas of Hollowmere — ホロウミア大地図</title>
+<style>
+  :root{
+    --ink:#f2e7cc;--muted:#bfb59f;--gold:#d9bd72;--gold-bright:#f1dc9b;
+    --night:#07111b;--panel:rgba(8,18,27,.88);--line:rgba(217,189,114,.42);
+    --forest:#7dd49a;--library:#e4c56c;--town:#ffb866;--sacred:#c1a4f2;
+    --highland:#ef9a7e;--fields:#dc95c5;--water:#71c9e6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;background:var(--night);overflow:hidden;
+    font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;color:var(--ink)}
+  button{font:inherit;color:inherit}
+  #stage{position:relative;width:100%;height:100%;isolation:isolate;background:#07131d}
+  #stage::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(circle at 50% 48%,transparent 48%,rgba(1,7,12,.48) 100%),
+      linear-gradient(180deg,rgba(4,12,18,.16),transparent 20%,transparent 76%,rgba(3,9,14,.35));
+    box-shadow:inset 0 0 130px rgba(0,0,0,.72)}
+  #stage::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.15;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E")}
+  svg{position:relative;z-index:1;width:100%;height:100%;display:block}
+
+  .panel{border:1px solid var(--line);background:linear-gradient(145deg,rgba(10,25,34,.94),rgba(6,15,23,.82));
+    box-shadow:0 16px 42px rgba(0,0,0,.44),inset 0 0 24px rgba(217,189,114,.035);backdrop-filter:blur(12px)}
+  #cartouche{position:absolute;top:clamp(14px,2.2vw,32px);left:clamp(14px,2.4vw,38px);z-index:5;
+    width:min(470px,calc(100vw - 28px));padding:20px 24px 18px;border-radius:2px;pointer-events:none;
+    transition:opacity .35s ease,transform .35s ease}
+  #cartouche::before,#cartouche::after{content:"";position:absolute;pointer-events:none}
+  #cartouche::before{inset:5px;border:1px solid rgba(217,189,114,.2)}
+  #cartouche::after{left:24px;right:24px;bottom:10px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5}
+  .eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+  #cartouche h1{font-size:clamp(24px,2.2vw,35px);line-height:1.05;letter-spacing:.07em;color:var(--gold-bright);
+    font-weight:normal;font-variant:small-caps;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+  #cartouche .jp{font-size:12px;margin-top:7px;color:#eadcba;letter-spacing:.08em}
+  #cartouche .sub{font-size:11.5px;margin-top:11px;line-height:1.65;color:var(--muted)}
+  #counter{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:11px;color:var(--gold-bright);letter-spacing:.08em}
+  #counter::before{content:"✦";font-size:9px}
+
+  #legend{position:absolute;right:clamp(14px,2.4vw,38px);top:clamp(14px,2.2vw,32px);z-index:5;
+    width:244px;padding:16px 15px 13px;border-radius:2px}
+  #legend h2{font-size:11px;font-variant:small-caps;letter-spacing:.19em;color:var(--gold-bright);
+    border-bottom:1px solid rgba(217,189,114,.25);padding:0 4px 10px;margin-bottom:7px;font-weight:normal}
+  .leg-row{width:100%;display:flex;align-items:center;gap:10px;padding:6px;border:0;border-radius:2px;
+    background:transparent;text-align:left;cursor:pointer;font-size:11.5px;transition:background .18s,opacity .18s,transform .18s}
+  .leg-row:hover,.leg-row:focus-visible{background:rgba(217,189,114,.11);outline:1px solid rgba(217,189,114,.25);transform:translateX(-2px)}
+  .leg-row.dimmed{opacity:.3}.leg-dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 9px currentColor}
+  .leg-count{margin-left:auto;font-size:10px;color:var(--muted)}
+  #reset-view{width:100%;margin-top:9px;padding:8px 10px;border:1px solid rgba(217,189,114,.3);border-radius:2px;
+    background:rgba(217,189,114,.08);color:var(--gold-bright);font-size:10.5px;letter-spacing:.06em;cursor:pointer}
+  #reset-view:hover,#reset-view:focus-visible{background:rgba(217,189,114,.16);outline:1px solid rgba(217,189,114,.35)}
+  #reset-view[hidden]{display:none}
+  #legend .hint{font-size:9.5px;color:var(--muted);margin:9px 5px 0;line-height:1.55}
+
+  #tip{position:absolute;z-index:10;pointer-events:none;display:none;width:286px;border:1px solid rgba(217,189,114,.62);
+    border-radius:3px;overflow:hidden;background:rgba(5,14,22,.97);box-shadow:0 18px 50px rgba(0,0,0,.72)}
+  #tip img{width:100%;height:161px;object-fit:cover;display:block;background:#08101f}
+  #tip .body{padding:12px 14px 14px;border-top:1px solid rgba(217,189,114,.18)}
+  #tip .ep{font-size:9.5px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase}
+  #tip .name{font-size:15px;margin-top:5px;line-height:1.35;color:#fff3d6}
+  #tip .meta{font-size:10.5px;color:var(--muted);margin-top:7px;line-height:1.55}
+
+  #dedication{position:absolute;left:clamp(14px,2.4vw,38px);bottom:clamp(12px,2vw,28px);z-index:5;
+    max-width:520px;padding-left:14px;border-left:1px solid rgba(217,189,114,.52);font-size:10.5px;line-height:1.7;
+    color:rgba(242,231,204,.72);pointer-events:none;text-shadow:0 2px 7px #000}
+  #dedication .sig{color:var(--gold);font-variant:small-caps;letter-spacing:.1em}
+  #map-credit{position:absolute;right:clamp(14px,2.4vw,38px);bottom:clamp(12px,2vw,28px);z-index:5;
+    font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,231,204,.5);text-shadow:0 1px 5px #000}
+
+  .region-label{fill:#f0d798;font-size:18px;font-style:italic;opacity:.9;font-family:Georgia,serif;
+    letter-spacing:.1em;text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#07111b;stroke-width:4px;stroke-opacity:.7}
+  .region-label-jp{fill:#f2e7cc;font-size:9px;letter-spacing:.08em;opacity:.72;text-anchor:middle;pointer-events:none;
+    paint-order:stroke;stroke:#07111b;stroke-width:3px;stroke-opacity:.7}
+  .marker{cursor:pointer;outline:none;transition:opacity .18s}.marker circle.core{transition:r .15s,stroke-width .15s}
+  .marker:hover circle.core,.marker:focus-visible circle.core{stroke:#fff0bd;stroke-width:2px}
+  .marker text{font-size:7.5px;fill:#07111b;font-weight:bold;text-anchor:middle;font-family:Verdana,sans-serif;pointer-events:none}
+  .marker.dimmed{opacity:0;pointer-events:none}.pulse{animation:pl 2.2s ease-in-out infinite}
+  .region-visual{transition:opacity .3s ease}.region-visual.dimmed{opacity:0!important}
+  #stage.zoomed #cartouche{opacity:0;transform:translateY(-16px)}
+  #stage.zoomed #dedication,#stage.zoomed #map-credit{opacity:0}
+  @keyframes pl{0%,100%{opacity:.4}50%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+  @media (max-width:900px){
+    #cartouche{padding:14px 16px;width:min(350px,calc(100vw - 28px))}#cartouche .sub{display:none}
+    #legend{top:auto;right:12px;bottom:12px;width:210px;max-height:45vh;overflow:auto;padding:11px}
+    #legend h2{padding-bottom:7px}.leg-row{padding:4px;font-size:10.5px}#legend .hint{display:none}
+    #dedication,#map-credit{display:none}.region-label{font-size:16px}.region-label-jp{display:none}
+  }
+  @media (max-width:560px){
+    #cartouche{top:8px;left:8px;right:8px;width:auto;padding:11px 14px}#cartouche h1{font-size:20px}
+    #cartouche .eyebrow{font-size:8px;margin-bottom:4px}#cartouche .jp{font-size:9px;margin-top:4px}#counter{font-size:8.5px;margin-top:6px}
+    #legend{display:block;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));width:auto;
+      max-height:34vh;overflow:auto;padding:8px;overscroll-behavior:contain}
+    #legend h2{display:none}#legrows{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+    .leg-row{padding:4px 5px;font-size:9px;line-height:1.1}.leg-count{display:none}
+    #reset-view{margin-top:5px;padding:6px;font-size:9px}#legend .hint{display:none}
+    #tip{width:min(260px,calc(100vw - 24px))}#tip img{height:135px}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="map" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="Interactive illustrated atlas of Hollowmere with 67 published journeys and one forthcoming destination">
+    <defs>
+      <radialGradient id="vign" cx="50%" cy="46%" r="72%">
+        <stop offset="0%" stop-color="#16233e"/><stop offset="72%" stop-color="#0d1526"/>
+        <stop offset="100%" stop-color="#080d19"/>
+      </radialGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#12253d"/><stop offset="100%" stop-color="#0a1a30"/>
+      </linearGradient>
+      <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="3.2" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="26"/>
+      </filter>
+    </defs>
+
+    <rect width="1600" height="1000" fill="url(#vign)"/>
+    <image href="assets/hollowmere-world-map.png" x="0" y="0" width="1600" height="1000"
+           preserveAspectRatio="none" aria-label="Hand-painted map of the realm of Hollowmere"/>
+    <rect width="1600" height="1000" fill="#06121c" opacity=".08" pointer-events="none"/>
+
+    <!-- region auras and labels are kept as a subtle interactive overlay -->
+    <g id="auras"></g>
+
+    <!-- compass rose -->
+    <g transform="translate(1490,120)" opacity=".74" stroke="#e0c582" fill="#e0c582">
+      <circle r="34" fill="none" stroke-width="1"/><circle r="3" stroke="none"/>
+      <path d="M0,-30 L6,0 L0,30 L-6,0 Z" stroke="none" opacity=".9"/>
+      <path d="M-30,0 L0,-5 L30,0 L0,5 Z" stroke="none" opacity=".45"/>
+      <text y="-42" text-anchor="middle" font-size="13" stroke="none" font-family="Georgia">N</text>
+    </g>
+
+    <g id="markers"></g>
+
+    <!-- Canonical Luma v2 swimming loop, wandering gently across the atlas -->
+    <g id="luma" filter="url(#glow)" opacity=".78" pointer-events="none">
+      <title>Luma — the slender swimming wisp of Hollowmere</title>
+      <image href="assets/luma-swim-v2-atlas.webp" x="-10.5" y="-32.75" width="21" height="65.5"
+             preserveAspectRatio="xMidYMid meet"/>
+      <animateMotion dur="187.5s" repeatCount="indefinite" rotate="auto"
+        path="M300,320 C520,240 760,180 980,230 C1200,280 1380,420 1340,560 C1300,700 1080,760 860,800 C640,840 480,760 470,660 C460,560 600,520 800,545 C960,565 1020,460 900,380 C780,300 500,380 300,320"/>
+    </g>
+  </svg>
+
+  <div id="cartouche" class="panel">
+    <div class="eyebrow">Sparkling Hollow · The Living World</div>
+    <h1>The Atlas of Hollowmere</h1>
+    <div class="jp">ホロウミア大地図 — 全作品をめぐる旅の記録</div>
+    <div class="sub">Every light marks an hour of music and a place already visited.
+      Hover to remember it; click to return.<br>
+      灯りひとつが1時間の物語。触れて場所の記憶を、クリックで再びその地へ。</div>
+    <div id="counter"></div>
+  </div>
+
+  <div id="legend" class="panel"><h2>Regions of Hollowmere</h2><div id="legrows"></div>
+    <button id="reset-view" type="button" hidden>← 全体地図へ戻る</button>
+    <div class="hint">地域名をクリックでズーム／もう一度クリックで全体地図へ</div>
+  </div>
+
+  <div id="tip"><img id="tipimg" alt=""><div class="body">
+    <div class="ep" id="tipep"></div><div class="name" id="tipname"></div><div class="meta" id="tipmeta"></div>
+  </div></div>
+
+  <div id="dedication">
+    First charted from the Rainkeeper's Map Room · 7 July 2026<br>
+    <span class="sig">A realm shaped by Meloniki &nbsp;·&nbsp; Sparkling Hollow</span><br>
+    歩いた場所は灯りになり、まだ見ぬ場所は道になる。
+  </div>
+  <div id="map-credit">Illustrated atlas · Hover a light to begin</div>
+</div>
+
+<script>
+"use strict";
+/* ================= regions ================= */
+const REGIONS = {
+  town:    {label:"Hollowmere Town",    jp:"ホロウミアの街",   color:"#ffb347", cx:800,  cy:560, rx:170, ry:112},
+  forest:  {label:"The Glimmerwood",    jp:"きらめきの森",     color:"#6fd08c", cx:360,  cy:340, rx:215, ry:150},
+  library: {label:"Athenaeum District", jp:"図書館街",         color:"#d4af37", cx:500,  cy:700, rx:160, ry:104},
+  sacred:  {label:"Moonveil Reaches",   jp:"月帳の霊峰",       color:"#b48ce8", cx:950,  cy:255, rx:250, ry:120},
+  highland:{label:"Windroad Highlands", jp:"風の道高地",       color:"#e8927c", cx:1345, cy:470, rx:160, ry:145},
+  fields:  {label:"Duskfields Beyond",  jp:"たそがれの丘",     color:"#e08cc0", cx:1225, cy:755, rx:170, ry:96},
+  water:   {label:"The Mirrorcoast",    jp:"鏡の海岸",         color:"#6cc3e0", cx:820,  cy:868, rx:330, ry:62}
+};
+
+/* ============ the 67 places (from sh_stats.db, YouTube API公式データ) ============ */
+/* n=episode, id=YouTube videoId (null=未公開), ts=published unix time, r=region */
+const PLACES = [
+ {n:1,  id:"UXizIHMZxo0", ts:1778164489, r:"town",    name:"Celtic Harp by the Fireplace"},
+ {n:2,  id:"x0mspZh8t7s", ts:1778169437, r:"forest",  name:"Rainy Forest Celtic Music"},
+ {n:3,  id:"DWWTc4YOqGI", ts:1778403637, r:"library", name:"Celtic Lofi Library Night"},
+ {n:4,  id:"etXuzEk_IDg", ts:1778335404, r:"forest",  name:"Misty Celtic Stream"},
+ {n:5,  id:"TzYUrObpKxA", ts:1778417116, r:"sacred",  name:"Bamboo Shrine Mist"},
+ {n:6,  id:"42Zo4I15gGE", ts:1778430852, r:"water",   name:"Crystal Spring Ruins"},
+ {n:7,  id:"i-LOY6jY0rE", ts:1778502937, r:"library", name:"Emerald Rain Library"},
+ {n:8,  id:"fYUyPNkvQsM", ts:1778515179, r:"sacred",  name:"Rainy Shrine Study Hall"},
+ {n:9,  id:"O02fBv9vgsY", ts:1778590913, r:"library", name:"Crystal Underwater Library"},
+ {n:10, id:"8DN1YntX4dc", ts:1778623513, r:"library", name:"Crystal Rain Study Hall"},
+ {n:11, id:"H6c9fTyuPC4", ts:1778682978, r:"library", name:"Rainy Crystal Library"},
+ {n:12, id:"6ighOqv1Ks0", ts:1778765236, r:"forest",  name:"Rainy Celtic Forest Workshop"},
+ {n:13, id:"Pr_y5s-_YkE", ts:1778801423, r:"sacred",  name:"Rainy Crystal Observatory"},
+ {n:14, id:"1aqv-AKnILE", ts:1778932802, r:"town",    name:"Rainy Crystal Alchemist Room"},
+ {n:15, id:"92prZGbHW3c", ts:1778935933, r:"highland",name:"Morning Celtic Trail"},
+ {n:16, id:"DNrTuflqjN4", ts:1779019626, r:"library", name:"Rainy Celtic Coding Sanctuary"},
+ {n:17, id:"jiKQeO3FUaQ", ts:1779101637, r:"forest",  name:"Rainy Forest Study Sanctuary"},
+ {n:18, id:"eE_lJGlHnDg", ts:1779110224, r:"forest",  name:"Rainy Celtic Forest Music"},
+ {n:19, id:"dz6yUF4G94o", ts:1779192012, r:"library", name:"The Library That Holds the Rain"},
+ {n:20, id:"LxTQfj4P1T0", ts:1779197485, r:"sacred",  name:"The Spell and the Stone"},
+ {n:21, id:"UYwPhdNafhc", ts:1779342938, r:"fields",  name:"The Village Beyond the Mist"},
+ {n:22, id:"jGRBAi5UNUE", ts:1779368659, r:"water",   name:"Where the Blue Rain Sleeps"},
+ {n:23, id:"MzkTiBDw4d4", ts:1779457849, r:"forest",  name:"Where the White Deer Watches"},
+ {n:24, id:"ZV2-wmthl_g", ts:1779494943, r:"sacred",  name:"Where the Druid Fire Still Glows"},
+ {n:25, id:"idDnK2cAEyg", ts:1779580014, r:"sacred",  name:"The Rainlit Alchemist Shrine"},
+ {n:26, id:"kBSLulmQnD0", ts:1779601981, r:"sacred",  name:"Where the Rain Writes Runes"},
+ {n:27, id:"l5_N50Is8IY", ts:1779625709, r:"highland",name:"Where the Ember Road Begins"},
+ {n:28, id:"j4149cv9Utk", ts:1779634973, r:"fields",  name:"Where the Sky Lanterns Read"},
+ {n:29, id:"UUC-cd2RCuo", ts:1779732989, r:"sacred",  name:"Where Blue Rain Guards the Shrine"},
+ {n:30, id:"jEPLZsvzIMs", ts:1779758117, r:"town",    name:"Where the Hearth Lanterns Wake"},
+ {n:31, id:"pRutjSaHgLs", ts:1779806729, r:"town",    name:"Where the Rain Keeps the Workshop"},
+ {n:32, id:"i2Mpoe3YMCQ", ts:1779885528, r:"sacred",  name:"Where the Mist Opens to the Shrine"},
+ {n:33, id:"aZWSveexAAA", ts:1779948962, r:"forest",  name:"Rainy Celtic Forest Library"},
+ {n:34, id:"B6zMJ7-kNrk", ts:1780056035, r:"water",   name:"Rainy Celtic Crystal Spring"},
+ {n:35, id:"jdBm_powmRY", ts:1780142437, r:"water",   name:"Where the Crystal Falls Sing"},
+ {n:36, id:"OlkH15sPwh0", ts:1780199777, r:"water",   name:"Whispering Hollow Springs"},
+ {n:37, id:"dvSah6yCpgw", ts:1780236660, r:"sacred",  name:"Moonlit Druid Observatory"},
+ {n:38, id:"-Q_aB_vUerg", ts:1780314837, r:"forest",  name:"The Worldtree of Starlight Hollow"},
+ {n:39, id:"Kw0STLV9ADM", ts:1780401322, r:"library", name:"The Celestial Library of Hollow"},
+ {n:40, id:"RKgSMIQkgEE", ts:1780486040, r:"sacred",  name:"The Starfall Temple"},
+ {n:41, id:"mo5_FfGrrKc", ts:1780571553, r:"fields",  name:"The Lantern Village Beyond the Mist"},
+ {n:42, id:"sFHP_vUtgYo", ts:1780665343, r:"town",    name:"The Midnight Market of Hollowmere"},
+ {n:43, id:"1bO-kCCeWx4", ts:1780747205, r:"town",    name:"The Rainlit Guildhall of Hollowmere"},
+ {n:44, id:"jobmbnWxtJ0", ts:1780833632, r:"town",    name:"The Dawn Gate of Hollowmere"},
+ {n:45, id:"3F_4fCSOlYg", ts:1780920037, r:"highland",name:"The Windroad Ruins Beyond Hollowmere"},
+ {n:46, id:"3wY9u6b7M5s", ts:1780996444, r:"library", name:"The Crystal Archive Beneath Hollowmere"},
+ {n:47, id:"7XD4RuWzblQ", ts:1781003523, r:"sacred",  name:"The Astral Observatory of Hollowmere"},
+ {n:48, id:"r_b22O9DbIY", ts:1781072073, r:"water",   name:"The Moonlit Rune Harbor of Hollowmere"},
+ {n:49, id:"eYtlASpe88g", ts:1781184612, r:"library", name:"The Sunlit Library of Hollowmere"},
+ {n:50, id:"lq51FRPcqro", ts:1781287425, r:"town",    name:"The Heart of Hollowmere"},
+ {n:51, id:"S6WD1RlQT4k", ts:1781500359, r:"fields",  name:"The Twilight Blossoms of Hollowmere"},
+ {n:52, id:"xOj28vmx5NQ", ts:1781626704, r:"town",    name:"The Ember Hearth of Hollowmere"},
+ {n:53, id:"A0SINwxYy68", ts:1781694035, r:"library", name:"The Rainlit Library of Hollowmere"},
+ {n:54, id:"zj7WH6NwLKY", ts:1781728438, r:"highland",name:"Wandering Piper's Road"},
+ {n:55, id:"FxFvyrA9LMI", ts:1781827803, r:"water",   name:"The Moonwell of Hollowmere"},
+ {n:56, id:"UKz5xFkUtOs", ts:1781870776, r:"town",    name:"The Lantern Market of Hollowmere"},
+ {n:57, id:"IdKdZ0vTx1c", ts:1782007044, r:"sacred",  name:"The Rainfall Sanctuary of Hollowmere"},
+ {n:58, id:"9QEEiYL2fMg", ts:1782042055, r:"highland",name:"The Windroad Highlands of Hollowmere"},
+ {n:59, id:"G66sH7JWKks", ts:1782212404, r:"water",   name:"The Sunlit Waterways of Hollowmere"},
+ {n:60, id:"RIk2oLxDVRc", ts:1782298821, r:"forest",  name:"The Glimmerwood of Hollowmere"},
+ {n:61, id:"KItwZd8VvPE", ts:1782457534, r:"town",    name:"The Winterhearth of Hollowmere"},
+ {n:62, id:"AQUFpX-1v-U", ts:1782635421, r:"fields",  name:"The Lavender Duskfields Beyond Hollowmere"},
+ {n:63, id:"AgF8hI1B-gI", ts:1782692023, r:"town",    name:"The Copperbell Court of Hollowmere"},
+ {n:64, id:"bCMi1OsW_6M", ts:1782860756, r:"sacred",  name:"The Moonveil Circle of Hollowmere"},
+ {n:65, id:"bMIVo2Tydcc", ts:1782950271, r:"highland",name:"The Skybridge Sanctum of Hollowmere"},
+ {n:66, id:"alL4egUYQLE", ts:1783030930, r:"town",    name:"The Rainkeeper's Map Room of Hollowmere"},
+ {n:67, id:"ikYeO1qwfH8", ts:1783259392, r:"water",   name:"The Seacliff Waystation of Hollowmere"},
+ {n:68, id:null,          ts:null,       r:"forest",  name:"The Mossglass Conservatory of Hollowmere"}
+];
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const $ = s => document.querySelector(s);
+const el = (t, attrs) => { const e = document.createElementNS(SVGNS, t);
+  for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+
+/* ---- region auras & labels ---- */
+(function(){
+  const g = $("#auras");
+  for (const key in REGIONS) {
+    const r = REGIONS[key];
+    const a = el("ellipse", {cx:r.cx, cy:r.cy, rx:r.rx*1.06, ry:r.ry*1.12,
+      fill:r.color, opacity:.075, filter:"url(#soft)", class:"region-visual", "data-region":key});
+    g.appendChild(a);
+    const ring = el("ellipse", {cx:r.cx, cy:r.cy, rx:r.rx*1.02, ry:r.ry*1.06, fill:"none",
+      stroke:r.color, "stroke-width":.8, "stroke-dasharray":"1 6", opacity:.3,
+      class:"region-visual", "data-region":key});
+    g.appendChild(ring);
+    const ly = r.cy - r.ry*1.12 - 10;
+    const t = el("text", {x:r.cx, y:ly, class:"region-label region-visual", "data-region":key}); t.textContent = r.label;
+    const t2 = el("text", {x:r.cx, y:ly+15, class:"region-label-jp region-visual", "data-region":key}); t2.textContent = r.jp;
+    g.appendChild(t); g.appendChild(t2);
+  }
+})();
+
+/* ---- marker placement: phyllotaxis inside each region ellipse ---- */
+(function(){
+  const byRegion = {};
+  PLACES.forEach(p => (byRegion[p.r] = byRegion[p.r] || []).push(p));
+  const GA = Math.PI * (3 - Math.sqrt(5));
+  for (const key in byRegion) {
+    const reg = REGIONS[key], list = byRegion[key], N = list.length;
+    list.forEach((p, i) => {
+      const rr = Math.sqrt((i + 0.62) / N) * 0.86, th = i * GA;
+      p.x = reg.cx + reg.rx * rr * Math.cos(th);
+      p.y = reg.cy + reg.ry * rr * Math.sin(th);
+    });
+  }
+})();
+
+/* ---- draw markers ---- */
+const tip = $("#tip"), tipimg = $("#tipimg"), tipep = $("#tipep"),
+      tipname = $("#tipname"), tipmeta = $("#tipmeta");
+const fmtDate = ts => new Date(ts*1000).toLocaleDateString("ja-JP",
+  {year:"numeric", month:"long", day:"numeric"});
+
+(function(){
+  const g = $("#markers");
+  PLACES.forEach(p => {
+    const reg = REGIONS[p.r];
+    const m = el("g", {class:"marker", transform:`translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`,
+      tabindex:"0", role:"link", "aria-label":`${p.id ? "Episode " + p.n : "Coming soon"}: ${p.name}`});
+    m.dataset.region = p.r;
+    const halo = el("circle", {r:11, fill:reg.color, opacity:.16});
+    const core = el("circle", {r:7, fill:reg.color, stroke:"#0d1526",
+      "stroke-width":1, class:"core", filter:"url(#glow)"});
+    const num = el("text", {y:2.6}); num.textContent = p.n;
+    if (!p.id) { core.classList.add("pulse"); num.textContent = "?"; }
+    m.appendChild(halo); m.appendChild(core); m.appendChild(num);
+
+    m.addEventListener("mouseenter", ev => {
+      core.setAttribute("r", 10); halo.setAttribute("opacity", .32);
+      tipep.textContent = p.id ? `Episode ${p.n} · ${reg.label}` : `Episode ${p.n} · Coming Soon`;
+      tipname.textContent = p.name;
+      tipmeta.textContent = p.id
+        ? `${fmtDate(p.ts)} 公開 ・ クリックでこの場所を訪れる →`
+        : "制作中 — 次の目的地。もうすぐ地図に灯りがともる。";
+      if (p.id) { tipimg.src = `https://i.ytimg.com/vi/${p.id}/mqdefault.jpg`; tipimg.style.display = "block"; }
+      else tipimg.style.display = "none";
+      tip.style.display = "block"; moveTip(ev);
+    });
+    m.addEventListener("mousemove", moveTip);
+    m.addEventListener("mouseleave", () => {
+      core.setAttribute("r", 7); halo.setAttribute("opacity", .16); tip.style.display = "none";
+    });
+    if (p.id) {
+      const travel = () => window.open("https://youtu.be/" + p.id, "_blank", "noopener");
+      m.addEventListener("click", travel);
+      m.addEventListener("keydown", ev => {
+        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); travel(); }
+      });
+    }
+    g.appendChild(m);
+  });
+  function moveTip(ev){
+    const pad = 18, w = 262, h = 230;
+    let x = ev.clientX + pad, y = ev.clientY + pad;
+    if (x + w > innerWidth)  x = ev.clientX - w - pad;
+    if (y + h > innerHeight) y = ev.clientY - h - pad;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+})();
+
+/* ---- legend + filter ---- */
+(function(){
+  const rows = $("#legrows"), map = $("#map"), stage = $("#stage"), reset = $("#reset-view");
+  const FULL_VIEW = [0, 0, 1600, 1000];
+  let active = null;
+  let viewAnimation = 0;
+  const counts = {};
+  PLACES.forEach(p => counts[p.r] = (counts[p.r] || 0) + 1);
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  function regionView(r) {
+    let w = r.rx * 2.8, h = r.ry * 2.8;
+    const ratio = 1.6;
+    if (w / h < ratio) w = h * ratio; else h = w / ratio;
+    w = Math.min(w, 1520); h = Math.min(h, 950);
+    return [clamp(r.cx - w/2, 0, 1600 - w), clamp(r.cy - h/2, 0, 1000 - h), w, h];
+  }
+  function animateView(target) {
+    cancelAnimationFrame(viewAnimation);
+    const from = map.getAttribute("viewBox").split(/\s+/).map(Number);
+    const start = performance.now();
+    const duration = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 680;
+    function frame(now) {
+      const raw = duration ? Math.min(1, (now - start) / duration) : 1;
+      const eased = raw < .5 ? 4*raw*raw*raw : 1 - Math.pow(-2*raw + 2, 3)/2;
+      const current = from.map((v, i) => v + (target[i] - v) * eased);
+      map.setAttribute("viewBox", current.map(v => v.toFixed(2)).join(" "));
+      if (raw < 1) viewAnimation = requestAnimationFrame(frame);
+    }
+    viewAnimation = requestAnimationFrame(frame);
+  }
+  function setRegion(key) {
+    active = key;
+    const focused = active !== null;
+    stage.classList.toggle("zoomed", focused);
+    reset.hidden = !focused;
+    tip.style.display = "none";
+    document.querySelectorAll(".leg-row").forEach(rw => {
+      rw.setAttribute("aria-pressed", String(active === rw.dataset.key));
+      rw.classList.toggle("dimmed", focused && rw.dataset.key !== active);
+    });
+    document.querySelectorAll(".marker").forEach(mk =>
+      mk.classList.toggle("dimmed", focused && mk.dataset.region !== active));
+    document.querySelectorAll(".region-visual").forEach(rv =>
+      rv.classList.toggle("dimmed", focused && rv.dataset.region !== active));
+    animateView(focused ? regionView(REGIONS[active]) : FULL_VIEW);
+  }
+
+  for (const key in REGIONS) {
+    const r = REGIONS[key];
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "leg-row"; row.dataset.key = key;
+    row.setAttribute("aria-pressed", "false");
+    row.innerHTML = `<span class="leg-dot" style="background:${r.color};color:${r.color}"></span>` +
+      `<span>${r.label}<br><small style="opacity:.6">${r.jp}</small></span>` +
+      `<span class="leg-count">${counts[key] || 0}</span>`;
+    row.addEventListener("click", () => setRegion(active === key ? null : key));
+    rows.appendChild(row);
+  }
+  reset.addEventListener("click", () => setRegion(null));
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape" && active !== null) setRegion(null);
+  });
+  const pub = PLACES.filter(p => p.id).length;
+  $("#counter").textContent = `${pub} places charted · #68 is taking shape`;
+})();
+</script>
+</body>
+</html>
