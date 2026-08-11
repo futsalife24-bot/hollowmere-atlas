@@ -39,6 +39,8 @@
   #cartouche .sub{font-size:11.5px;margin-top:11px;line-height:1.65;color:var(--muted)}
   #counter{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:11px;color:var(--gold-bright);letter-spacing:.08em}
   #counter::before{content:"✦";font-size:9px}
+  #version-stamp{display:inline-flex;align-items:center;margin-top:10px;padding:4px 8px;border:1px solid rgba(217,189,114,.28);
+    background:rgba(217,189,114,.07);color:var(--muted);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
 
   #legend{position:absolute;right:clamp(14px,2.4vw,38px);top:clamp(14px,2.2vw,32px);z-index:5;
     width:244px;padding:16px 15px 13px;border-radius:2px}
@@ -78,6 +80,8 @@
   .marker:hover circle.core,.marker:focus-visible circle.core{stroke:#fff0bd;stroke-width:2px}
   .marker text{font-size:7.5px;fill:#07111b;font-weight:bold;text-anchor:middle;font-family:Verdana,sans-serif;pointer-events:none}
   .marker.dimmed{opacity:0;pointer-events:none}.pulse{animation:pl 2.2s ease-in-out infinite}
+  .marker.scheduled circle.core{stroke:var(--gold-bright);stroke-width:1.6px}
+  .marker.scheduled circle.halo{animation:pl 2.2s ease-in-out infinite}
   .region-visual{transition:opacity .3s ease}.region-visual.dimmed{opacity:0!important}
   #stage.zoomed #cartouche{opacity:0;transform:translateY(-16px)}
   #stage.zoomed #dedication,#stage.zoomed #map-credit{opacity:0}
@@ -104,7 +108,7 @@
 <body>
 <div id="stage">
   <svg id="map" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" role="img"
-       aria-label="Interactive illustrated atlas of Hollowmere with 67 published journeys and one forthcoming destination">
+       aria-label="Interactive illustrated atlas of Hollowmere with 83 charted destinations">
     <defs>
       <radialGradient id="vign" cx="50%" cy="46%" r="72%">
         <stop offset="0%" stop-color="#16233e"/><stop offset="72%" stop-color="#0d1526"/>
@@ -158,6 +162,7 @@
       Hover to remember it; click to return.<br>
       灯りひとつが1時間の物語。触れて場所の記憶を、クリックで再びその地へ。</div>
     <div id="counter"></div>
+    <div id="version-stamp">Atlas v2 · 11 Aug 2026</div>
   </div>
 
   <div id="legend" class="panel"><h2>Regions of Hollowmere</h2><div id="legrows"></div>
@@ -190,8 +195,8 @@ const REGIONS = {
   water:   {label:"The Mirrorcoast",    jp:"鏡の海岸",         color:"#6cc3e0", cx:820,  cy:868, rx:330, ry:62}
 };
 
-/* ============ the 67 places (from sh_stats.db, YouTube API公式データ) ============ */
-/* n=episode, id=YouTube videoId (null=未公開), ts=published unix time, r=region */
+/* ============ the 83 destinations of Sparkling Hollow ============ */
+/* n=episode, id=YouTube videoId, ts=published unix time, d=ISO date, r=region */
 const PLACES = [
  {n:1,  id:"UXizIHMZxo0", ts:1778164489, r:"town",    name:"Celtic Harp by the Fireplace"},
  {n:2,  id:"x0mspZh8t7s", ts:1778169437, r:"forest",  name:"Rainy Forest Celtic Music"},
@@ -260,7 +265,22 @@ const PLACES = [
  {n:65, id:"bMIVo2Tydcc", ts:1782950271, r:"highland",name:"The Skybridge Sanctum of Hollowmere"},
  {n:66, id:"alL4egUYQLE", ts:1783030930, r:"town",    name:"The Rainkeeper's Map Room of Hollowmere"},
  {n:67, id:"ikYeO1qwfH8", ts:1783259392, r:"water",   name:"The Seacliff Waystation of Hollowmere"},
- {n:68, id:null,          ts:null,       r:"forest",  name:"The Mossglass Conservatory of Hollowmere"}
+ {n:68, id:"DJB_kJ7qdow", d:"2026-07-08", r:"forest",   name:"The Mossglass Conservatory of Hollowmere"},
+ {n:69, id:"MiiTXCGx9e8", d:"2026-07-09", r:"highland", name:"The Goldenleaf Crossing of Hollowmere"},
+ {n:70, id:"A0iLcM8eReE", d:"2026-07-13", r:"water",    name:"The Duskpool Bathhouse of Hollowmere"},
+ {n:71, id:"cbOoGMDyLNo", d:"2026-07-14", r:"forest",   name:"The Rainy Forest Refuge of Hollowmere"},
+ {n:72, id:"9QEEbqZHzH4", d:"2026-07-17", r:"highland", name:"The First Gate of Hollowmere"},
+ {n:73, id:"_Lts7p3QbgM", d:"2026-07-18", r:"water",    name:"Where the Star River Leads"},
+ {n:74, id:"S6J7JxJ8qxM", d:"2026-07-22", r:"forest",   name:"The Hearth Beyond the Rainy Pines"},
+ {n:75, id:"rxHqSTO6ZFc", d:"2026-07-24", r:"water",    name:"The Lantern Keeper of Mistwood Bridge"},
+ {n:76, id:"UrrZ9SYQVzQ", d:"2026-07-28", r:"fields",   name:"The Rainlit Village of Silverpine River"},
+ {n:77, id:"1MpncAp9I_4", d:"2026-07-29", r:"town",     name:"The Seven Lantern Inn"},
+ {n:78, id:"vQWQRI6rrj0", d:"2026-07-30", r:"sacred",   name:"The Hidden Rowan Shrine"},
+ {n:79, id:"2au-44PRRiM", d:"2026-08-02", r:"water",    name:"The Moonroot Grotto"},
+ {n:80, id:"ss-gbT45_uU", d:"2026-08-05", r:"town",     name:"The Emberfiddle Tavern"},
+ {n:81, id:"zltElhVcoPM", d:"2026-08-08", r:"sacred",   name:"The Rainbell Abbey"},
+ {n:82, id:"7rkW2Cj5nK4", d:"2026-08-11", r:"sacred",   name:"The Rainbound Orrery"},
+ {n:83, id:"0vFtKtxKOKU", d:"2026-08-13", r:"library",  state:"scheduled", name:"The Silver Quill Scriptorium"}
 ];
 
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -305,45 +325,42 @@ const el = (t, attrs) => { const e = document.createElementNS(SVGNS, t);
 /* ---- draw markers ---- */
 const tip = $("#tip"), tipimg = $("#tipimg"), tipep = $("#tipep"),
       tipname = $("#tipname"), tipmeta = $("#tipmeta");
-const fmtDate = ts => new Date(ts*1000).toLocaleDateString("ja-JP",
+const fmtDate = p => new Date(p.d ? `${p.d}T12:00:00+09:00` : p.ts*1000).toLocaleDateString("ja-JP",
   {year:"numeric", month:"long", day:"numeric"});
 
 (function(){
   const g = $("#markers");
   PLACES.forEach(p => {
     const reg = REGIONS[p.r];
-    const m = el("g", {class:"marker", transform:`translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`,
-      tabindex:"0", role:"link", "aria-label":`${p.id ? "Episode " + p.n : "Coming soon"}: ${p.name}`});
+    const m = el("g", {class:`marker${p.state === "scheduled" ? " scheduled" : ""}`,
+      transform:`translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`, tabindex:"0", role:"link",
+      "aria-label":`Episode ${p.n}${p.state === "scheduled" ? " scheduled" : ""}: ${p.name}`});
     m.dataset.region = p.r;
-    const halo = el("circle", {r:11, fill:reg.color, opacity:.16});
+    const halo = el("circle", {r:11, fill:reg.color, opacity:.16, class:"halo"});
     const core = el("circle", {r:7, fill:reg.color, stroke:"#0d1526",
       "stroke-width":1, class:"core", filter:"url(#glow)"});
     const num = el("text", {y:2.6}); num.textContent = p.n;
-    if (!p.id) { core.classList.add("pulse"); num.textContent = "?"; }
     m.appendChild(halo); m.appendChild(core); m.appendChild(num);
 
     m.addEventListener("mouseenter", ev => {
       core.setAttribute("r", 10); halo.setAttribute("opacity", .32);
-      tipep.textContent = p.id ? `Episode ${p.n} · ${reg.label}` : `Episode ${p.n} · Coming Soon`;
+      tipep.textContent = `Episode ${p.n} · ${p.state === "scheduled" ? "Scheduled" : reg.label}`;
       tipname.textContent = p.name;
-      tipmeta.textContent = p.id
-        ? `${fmtDate(p.ts)} 公開 ・ クリックでこの場所を訪れる →`
-        : "制作中 — 次の目的地。もうすぐ地図に灯りがともる。";
-      if (p.id) { tipimg.src = `https://i.ytimg.com/vi/${p.id}/mqdefault.jpg`; tipimg.style.display = "block"; }
-      else tipimg.style.display = "none";
+      tipmeta.textContent = p.state === "scheduled"
+        ? `${fmtDate(p)} 公開予定 · クリックで待機ページへ →`
+        : `${fmtDate(p)} 公開 · クリックでこの場所を訪れる →`;
+      tipimg.src = `https://i.ytimg.com/vi/${p.id}/mqdefault.jpg`; tipimg.style.display = "block";
       tip.style.display = "block"; moveTip(ev);
     });
     m.addEventListener("mousemove", moveTip);
     m.addEventListener("mouseleave", () => {
       core.setAttribute("r", 7); halo.setAttribute("opacity", .16); tip.style.display = "none";
     });
-    if (p.id) {
-      const travel = () => window.open("https://youtu.be/" + p.id, "_blank", "noopener");
-      m.addEventListener("click", travel);
-      m.addEventListener("keydown", ev => {
-        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); travel(); }
-      });
-    }
+    const travel = () => window.open("https://youtu.be/" + p.id, "_blank", "noopener");
+    m.addEventListener("click", travel);
+    m.addEventListener("keydown", ev => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); travel(); }
+    });
     g.appendChild(m);
   });
   function moveTip(ev){
@@ -419,8 +436,9 @@ const fmtDate = ts => new Date(ts*1000).toLocaleDateString("ja-JP",
   document.addEventListener("keydown", ev => {
     if (ev.key === "Escape" && active !== null) setRegion(null);
   });
-  const pub = PLACES.filter(p => p.id).length;
-  $("#counter").textContent = `${pub} places charted · #68 is taking shape`;
+  const scheduled = PLACES.filter(p => p.state === "scheduled").length;
+  const published = PLACES.length - scheduled;
+  $("#counter").textContent = `${published} places charted · ${scheduled} destination scheduled · 83 total`;
 })();
 </script>
 </body>
