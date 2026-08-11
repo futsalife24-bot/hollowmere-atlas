@@ -65,6 +65,17 @@
   #tip .name{font-size:15px;margin-top:5px;line-height:1.35;color:#fff3d6}
   #tip .meta{font-size:10.5px;color:var(--muted);margin-top:7px;line-height:1.55}
 
+  #mobile-place-card{position:relative;z-index:5;padding:14px 15px 15px;border-radius:3px}
+  #mobile-place-card[hidden]{display:none!important}
+  #mobile-place-close{position:absolute;right:9px;top:8px;width:32px;height:32px;border:0;border-radius:50%;
+    background:rgba(217,189,114,.1);color:var(--gold-bright);font-size:20px;line-height:1;cursor:pointer}
+  .mp-eyebrow{padding-right:38px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)}
+  .mp-name{padding-right:28px;margin-top:5px;font-size:16px;line-height:1.3;color:#fff3d6}
+  .mp-meta{margin-top:6px;font-size:10px;line-height:1.5;color:var(--muted)}
+  #mobile-place-link{display:block;margin-top:11px;padding:11px 12px;border:1px solid rgba(217,189,114,.38);
+    border-radius:2px;background:rgba(217,189,114,.1);color:var(--gold-bright);font-size:11px;letter-spacing:.05em;
+    text-align:center;text-decoration:none}
+
   #dedication{position:absolute;left:clamp(14px,2.4vw,38px);bottom:clamp(12px,2vw,28px);z-index:5;
     max-width:520px;padding-left:14px;border-left:1px solid rgba(217,189,114,.52);font-size:10.5px;line-height:1.7;
     color:rgba(242,231,204,.72);pointer-events:none;text-shadow:0 2px 7px #000}
@@ -94,15 +105,28 @@
     #dedication,#map-credit{display:none}.region-label{font-size:16px}.region-label-jp{display:none}
   }
   @media (max-width:560px){
-    #cartouche{top:8px;left:8px;right:8px;width:auto;padding:11px 14px}#cartouche h1{font-size:20px}
-    #cartouche .eyebrow{font-size:8px;margin-bottom:4px}#cartouche .jp{font-size:9px;margin-top:4px}#counter{font-size:8.5px;margin-top:6px}
-    #legend{display:block;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));width:auto;
-      max-height:34vh;overflow:auto;padding:8px;overscroll-behavior:contain}
-    #legend h2{display:none}#legrows{display:grid;grid-template-columns:1fr 1fr;gap:2px}
-    .leg-row{padding:4px 5px;font-size:9px;line-height:1.1}.leg-count{display:none}
-    #reset-view{margin-top:5px;padding:6px;font-size:9px}#legend .hint{display:none}
-    #tip{width:min(260px,calc(100vw - 24px))}#tip img{height:135px}
+    html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+    #stage{height:auto;min-height:100dvh;display:flex;flex-direction:column;gap:10px;
+      padding:8px 8px max(12px,env(safe-area-inset-bottom));overflow:hidden}
+    #stage::before,#stage::after{position:fixed}
+    #map{order:2;width:100%;height:auto;aspect-ratio:8/5;flex:none;border:1px solid rgba(217,189,114,.24);
+      border-radius:3px;background:#081522;box-shadow:0 12px 30px rgba(0,0,0,.38);touch-action:manipulation}
+    #cartouche{position:relative;order:1;inset:auto;width:100%;padding:12px 14px;pointer-events:auto}
+    #cartouche h1{font-size:22px}#cartouche .eyebrow{font-size:8px;margin-bottom:4px}
+    #cartouche .jp{font-size:9px;margin-top:4px}#counter{font-size:8.5px;margin-top:6px}
+    #version-stamp{margin-top:6px;padding:3px 6px;font-size:7px}
+    #stage.zoomed #cartouche{opacity:1;transform:none}
+    #mobile-place-card{display:block;order:3;width:100%}
+    #legend{position:relative;order:4;display:block;inset:auto;width:100%;max-height:none;overflow:visible;padding:10px}
+    #legend h2{display:block;margin-bottom:8px;padding-bottom:7px;text-align:center;font-size:9px}
+    #legrows{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .leg-row{min-height:42px;padding:7px 8px;border:1px solid rgba(217,189,114,.16);background:rgba(217,189,114,.045);
+      font-size:9px;line-height:1.2}.leg-row:hover,.leg-row:focus-visible{transform:none}
+    .leg-dot{width:10px;height:10px}.leg-count{display:block;font-size:9px}
+    #reset-view{margin-top:7px;padding:9px;font-size:10px}#legend .hint{display:block;margin-top:8px;text-align:center;font-size:8.5px}
+    #tip{display:none!important}.marker text{font-size:9.5px}
   }
+  @media (hover:none),(pointer:coarse){#tip{display:none!important}}
 </style>
 </head>
 <body>
@@ -162,7 +186,7 @@
       Hover to remember it; click to return.<br>
       灯りひとつが1時間の物語。触れて場所の記憶を、クリックで再びその地へ。</div>
     <div id="counter"></div>
-    <div id="version-stamp">Atlas v2 · 11 Aug 2026</div>
+    <div id="version-stamp">Atlas v3 · Mobile · 11 Aug 2026</div>
   </div>
 
   <div id="legend" class="panel"><h2>Regions of Hollowmere</h2><div id="legrows"></div>
@@ -173,6 +197,14 @@
   <div id="tip"><img id="tipimg" alt=""><div class="body">
     <div class="ep" id="tipep"></div><div class="name" id="tipname"></div><div class="meta" id="tipmeta"></div>
   </div></div>
+
+  <section id="mobile-place-card" class="panel" hidden aria-live="polite" aria-label="選択した場所">
+    <button id="mobile-place-close" type="button" aria-label="場所カードを閉じる">×</button>
+    <div class="mp-eyebrow" id="mobile-place-ep"></div>
+    <div class="mp-name" id="mobile-place-name"></div>
+    <div class="mp-meta" id="mobile-place-meta"></div>
+    <a id="mobile-place-link" href="#" target="_blank" rel="noopener">YouTubeでこの場所を訪れる ↗</a>
+  </section>
 
   <div id="dedication">
     First charted from the Rainkeeper's Map Room · 7 July 2026<br>
@@ -327,6 +359,24 @@ const tip = $("#tip"), tipimg = $("#tipimg"), tipep = $("#tipep"),
       tipname = $("#tipname"), tipmeta = $("#tipmeta");
 const fmtDate = p => new Date(p.d ? `${p.d}T12:00:00+09:00` : p.ts*1000).toLocaleDateString("ja-JP",
   {year:"numeric", month:"long", day:"numeric"});
+const mobilePlaceCard = $("#mobile-place-card"), mobilePlaceEp = $("#mobile-place-ep"),
+      mobilePlaceName = $("#mobile-place-name"), mobilePlaceMeta = $("#mobile-place-meta"),
+      mobilePlaceLink = $("#mobile-place-link"), mobilePlaceClose = $("#mobile-place-close");
+const isMobileInteraction = () => matchMedia("(max-width:560px), (hover:none), (pointer:coarse)").matches;
+
+function showMobilePlace(p, reg) {
+  mobilePlaceEp.textContent = `Episode ${p.n} · ${p.state === "scheduled" ? "Scheduled" : reg.label}`;
+  mobilePlaceName.textContent = p.name;
+  mobilePlaceMeta.textContent = p.state === "scheduled"
+    ? `${fmtDate(p)} 公開予定。公開後、この灯りから旅へ出られます。`
+    : `${fmtDate(p)} 公開。下のボタンからこの場所の音楽へ。`;
+  mobilePlaceLink.href = "https://youtu.be/" + p.id;
+  mobilePlaceCard.hidden = false;
+  requestAnimationFrame(() => mobilePlaceCard.scrollIntoView({
+    behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block:"nearest"
+  }));
+}
+mobilePlaceClose.addEventListener("click", () => { mobilePlaceCard.hidden = true; });
 
 (function(){
   const g = $("#markers");
@@ -336,11 +386,12 @@ const fmtDate = p => new Date(p.d ? `${p.d}T12:00:00+09:00` : p.ts*1000).toLocal
       transform:`translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`, tabindex:"0", role:"link",
       "aria-label":`Episode ${p.n}${p.state === "scheduled" ? " scheduled" : ""}: ${p.name}`});
     m.dataset.region = p.r;
+    const hit = el("circle", {r:isMobileInteraction() ? 34 : 13, fill:"transparent", "pointer-events":"all"});
     const halo = el("circle", {r:11, fill:reg.color, opacity:.16, class:"halo"});
     const core = el("circle", {r:7, fill:reg.color, stroke:"#0d1526",
       "stroke-width":1, class:"core", filter:"url(#glow)"});
     const num = el("text", {y:2.6}); num.textContent = p.n;
-    m.appendChild(halo); m.appendChild(core); m.appendChild(num);
+    m.appendChild(hit); m.appendChild(halo); m.appendChild(core); m.appendChild(num);
 
     m.addEventListener("mouseenter", ev => {
       core.setAttribute("r", 10); halo.setAttribute("opacity", .32);
@@ -357,7 +408,10 @@ const fmtDate = p => new Date(p.d ? `${p.d}T12:00:00+09:00` : p.ts*1000).toLocal
       core.setAttribute("r", 7); halo.setAttribute("opacity", .16); tip.style.display = "none";
     });
     const travel = () => window.open("https://youtu.be/" + p.id, "_blank", "noopener");
-    m.addEventListener("click", travel);
+    m.addEventListener("click", ev => {
+      if (isMobileInteraction()) { ev.preventDefault(); showMobilePlace(p, reg); }
+      else travel();
+    });
     m.addEventListener("keydown", ev => {
       if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); travel(); }
     });
@@ -409,6 +463,7 @@ const fmtDate = p => new Date(p.d ? `${p.d}T12:00:00+09:00` : p.ts*1000).toLocal
     stage.classList.toggle("zoomed", focused);
     reset.hidden = !focused;
     tip.style.display = "none";
+    mobilePlaceCard.hidden = true;
     document.querySelectorAll(".leg-row").forEach(rw => {
       rw.setAttribute("aria-pressed", String(active === rw.dataset.key));
       rw.classList.toggle("dimmed", focused && rw.dataset.key !== active);
