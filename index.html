@@ -1,500 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Atlas of Hollowmere — ホロウミア大地図</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071927">
+<meta name="description" content="Lumaと巡る、Sparkling Hollowの三界ファンタジー世界地図。地上・天空・海中から全83の物語を探索できます。">
+<meta property="og:type" content="website"><meta property="og:title" content="Hollowmere Atlas — 三界を巡る生きた地図"><meta property="og:description" content="Lumaとともに、地上・天空・深水の三界と83の物語を探索しよう。"><meta property="og:image" content="https://futsalife24-bot.github.io/hollowmere-atlas/assets/hollowmere-atlas-og-v4.jpg"><meta name="twitter:card" content="summary_large_image">
+<title>Hollowmere Atlas — 三界を巡る生きた地図</title>
 <style>
-  :root{
-    --ink:#f2e7cc;--muted:#bfb59f;--gold:#d9bd72;--gold-bright:#f1dc9b;
-    --night:#07111b;--panel:rgba(8,18,27,.88);--line:rgba(217,189,114,.42);
-    --forest:#7dd49a;--library:#e4c56c;--town:#ffb866;--sacred:#c1a4f2;
-    --highland:#ef9a7e;--fields:#dc95c5;--water:#71c9e6;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%;background:var(--night);overflow:hidden;
-    font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;color:var(--ink)}
-  button{font:inherit;color:inherit}
-  #stage{position:relative;width:100%;height:100%;isolation:isolate;background:#07131d}
-  #stage::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
-    background:radial-gradient(circle at 50% 48%,transparent 48%,rgba(1,7,12,.48) 100%),
-      linear-gradient(180deg,rgba(4,12,18,.16),transparent 20%,transparent 76%,rgba(3,9,14,.35));
-    box-shadow:inset 0 0 130px rgba(0,0,0,.72)}
-  #stage::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.15;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E")}
-  svg{position:relative;z-index:1;width:100%;height:100%;display:block}
-
-  .panel{border:1px solid var(--line);background:linear-gradient(145deg,rgba(10,25,34,.94),rgba(6,15,23,.82));
-    box-shadow:0 16px 42px rgba(0,0,0,.44),inset 0 0 24px rgba(217,189,114,.035);backdrop-filter:blur(12px)}
-  #cartouche{position:absolute;top:clamp(14px,2.2vw,32px);left:clamp(14px,2.4vw,38px);z-index:5;
-    width:min(470px,calc(100vw - 28px));padding:20px 24px 18px;border-radius:2px;pointer-events:none;
-    transition:opacity .35s ease,transform .35s ease}
-  #cartouche::before,#cartouche::after{content:"";position:absolute;pointer-events:none}
-  #cartouche::before{inset:5px;border:1px solid rgba(217,189,114,.2)}
-  #cartouche::after{left:24px;right:24px;bottom:10px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5}
-  .eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
-  #cartouche h1{font-size:clamp(24px,2.2vw,35px);line-height:1.05;letter-spacing:.07em;color:var(--gold-bright);
-    font-weight:normal;font-variant:small-caps;text-shadow:0 2px 12px rgba(0,0,0,.8)}
-  #cartouche .jp{font-size:12px;margin-top:7px;color:#eadcba;letter-spacing:.08em}
-  #cartouche .sub{font-size:11.5px;margin-top:11px;line-height:1.65;color:var(--muted)}
-  #counter{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:11px;color:var(--gold-bright);letter-spacing:.08em}
-  #counter::before{content:"✦";font-size:9px}
-  #version-stamp{display:inline-flex;align-items:center;margin-top:10px;padding:4px 8px;border:1px solid rgba(217,189,114,.28);
-    background:rgba(217,189,114,.07);color:var(--muted);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
-
-  #legend{position:absolute;right:clamp(14px,2.4vw,38px);top:clamp(14px,2.2vw,32px);z-index:5;
-    width:244px;padding:16px 15px 13px;border-radius:2px}
-  #legend h2{font-size:11px;font-variant:small-caps;letter-spacing:.19em;color:var(--gold-bright);
-    border-bottom:1px solid rgba(217,189,114,.25);padding:0 4px 10px;margin-bottom:7px;font-weight:normal}
-  .leg-row{width:100%;display:flex;align-items:center;gap:10px;padding:6px;border:0;border-radius:2px;
-    background:transparent;text-align:left;cursor:pointer;font-size:11.5px;transition:background .18s,opacity .18s,transform .18s}
-  .leg-row:hover,.leg-row:focus-visible{background:rgba(217,189,114,.11);outline:1px solid rgba(217,189,114,.25);transform:translateX(-2px)}
-  .leg-row.dimmed{opacity:.3}.leg-dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 9px currentColor}
-  .leg-count{margin-left:auto;font-size:10px;color:var(--muted)}
-  #reset-view{width:100%;margin-top:9px;padding:8px 10px;border:1px solid rgba(217,189,114,.3);border-radius:2px;
-    background:rgba(217,189,114,.08);color:var(--gold-bright);font-size:10.5px;letter-spacing:.06em;cursor:pointer}
-  #reset-view:hover,#reset-view:focus-visible{background:rgba(217,189,114,.16);outline:1px solid rgba(217,189,114,.35)}
-  #reset-view[hidden]{display:none}
-  #legend .hint{font-size:9.5px;color:var(--muted);margin:9px 5px 0;line-height:1.55}
-
-  #tip{position:absolute;z-index:10;pointer-events:none;display:none;width:286px;border:1px solid rgba(217,189,114,.62);
-    border-radius:3px;overflow:hidden;background:rgba(5,14,22,.97);box-shadow:0 18px 50px rgba(0,0,0,.72)}
-  #tip img{width:100%;height:161px;object-fit:cover;display:block;background:#08101f}
-  #tip .body{padding:12px 14px 14px;border-top:1px solid rgba(217,189,114,.18)}
-  #tip .ep{font-size:9.5px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase}
-  #tip .name{font-size:15px;margin-top:5px;line-height:1.35;color:#fff3d6}
-  #tip .meta{font-size:10.5px;color:var(--muted);margin-top:7px;line-height:1.55}
-
-  #mobile-place-card{position:relative;z-index:5;padding:14px 15px 15px;border-radius:3px}
-  #mobile-place-card[hidden]{display:none!important}
-  #mobile-place-close{position:absolute;right:9px;top:8px;width:32px;height:32px;border:0;border-radius:50%;
-    background:rgba(217,189,114,.1);color:var(--gold-bright);font-size:20px;line-height:1;cursor:pointer}
-  .mp-eyebrow{padding-right:38px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)}
-  .mp-name{padding-right:28px;margin-top:5px;font-size:16px;line-height:1.3;color:#fff3d6}
-  .mp-meta{margin-top:6px;font-size:10px;line-height:1.5;color:var(--muted)}
-  #mobile-place-link{display:block;margin-top:11px;padding:11px 12px;border:1px solid rgba(217,189,114,.38);
-    border-radius:2px;background:rgba(217,189,114,.1);color:var(--gold-bright);font-size:11px;letter-spacing:.05em;
-    text-align:center;text-decoration:none}
-
-  #dedication{position:absolute;left:clamp(14px,2.4vw,38px);bottom:clamp(12px,2vw,28px);z-index:5;
-    max-width:520px;padding-left:14px;border-left:1px solid rgba(217,189,114,.52);font-size:10.5px;line-height:1.7;
-    color:rgba(242,231,204,.72);pointer-events:none;text-shadow:0 2px 7px #000}
-  #dedication .sig{color:var(--gold);font-variant:small-caps;letter-spacing:.1em}
-  #map-credit{position:absolute;right:clamp(14px,2.4vw,38px);bottom:clamp(12px,2vw,28px);z-index:5;
-    font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,231,204,.5);text-shadow:0 1px 5px #000}
-
-  .region-label{fill:#f0d798;font-size:18px;font-style:italic;opacity:.9;font-family:Georgia,serif;
-    letter-spacing:.1em;text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#07111b;stroke-width:4px;stroke-opacity:.7}
-  .region-label-jp{fill:#f2e7cc;font-size:9px;letter-spacing:.08em;opacity:.72;text-anchor:middle;pointer-events:none;
-    paint-order:stroke;stroke:#07111b;stroke-width:3px;stroke-opacity:.7}
-  .marker{cursor:pointer;outline:none;transition:opacity .18s}.marker circle.core{transition:r .15s,stroke-width .15s}
-  .marker:hover circle.core,.marker:focus-visible circle.core{stroke:#fff0bd;stroke-width:2px}
-  .marker text{font-size:7.5px;fill:#07111b;font-weight:bold;text-anchor:middle;font-family:Verdana,sans-serif;pointer-events:none}
-  .marker.dimmed{opacity:0;pointer-events:none}.pulse{animation:pl 2.2s ease-in-out infinite}
-  .marker.scheduled circle.core{stroke:var(--gold-bright);stroke-width:1.6px}
-  .marker.scheduled circle.halo{animation:pl 2.2s ease-in-out infinite}
-  .region-visual{transition:opacity .3s ease}.region-visual.dimmed{opacity:0!important}
-  #stage.zoomed #cartouche{opacity:0;transform:translateY(-16px)}
-  #stage.zoomed #dedication,#stage.zoomed #map-credit{opacity:0}
-  @keyframes pl{0%,100%{opacity:.4}50%{opacity:1}}
-  @media (prefers-reduced-motion:reduce){.pulse{animation:none}}
-  @media (max-width:900px){
-    #cartouche{padding:14px 16px;width:min(350px,calc(100vw - 28px))}#cartouche .sub{display:none}
-    #legend{top:auto;right:12px;bottom:12px;width:210px;max-height:45vh;overflow:auto;padding:11px}
-    #legend h2{padding-bottom:7px}.leg-row{padding:4px;font-size:10.5px}#legend .hint{display:none}
-    #dedication,#map-credit{display:none}.region-label{font-size:16px}.region-label-jp{display:none}
-  }
-  @media (max-width:560px){
-    html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
-    #stage{height:auto;min-height:100dvh;display:flex;flex-direction:column;gap:10px;
-      padding:8px 8px max(12px,env(safe-area-inset-bottom));overflow:hidden}
-    #stage::before,#stage::after{position:fixed}
-    #map{order:2;width:100%;height:auto;aspect-ratio:8/5;flex:none;border:1px solid rgba(217,189,114,.24);
-      border-radius:3px;background:#081522;box-shadow:0 12px 30px rgba(0,0,0,.38);touch-action:manipulation}
-    #cartouche{position:relative;order:1;inset:auto;width:100%;padding:12px 14px;pointer-events:auto}
-    #cartouche h1{font-size:22px}#cartouche .eyebrow{font-size:8px;margin-bottom:4px}
-    #cartouche .jp{font-size:9px;margin-top:4px}#counter{font-size:8.5px;margin-top:6px}
-    #version-stamp{margin-top:6px;padding:3px 6px;font-size:7px}
-    #stage.zoomed #cartouche{opacity:1;transform:none}
-    #mobile-place-card{display:block;order:3;width:100%}
-    #legend{position:relative;order:4;display:block;inset:auto;width:100%;max-height:none;overflow:visible;padding:10px}
-    #legend h2{display:block;margin-bottom:8px;padding-bottom:7px;text-align:center;font-size:9px}
-    #legrows{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-    .leg-row{min-height:42px;padding:7px 8px;border:1px solid rgba(217,189,114,.16);background:rgba(217,189,114,.045);
-      font-size:9px;line-height:1.2}.leg-row:hover,.leg-row:focus-visible{transform:none}
-    .leg-dot{width:10px;height:10px}.leg-count{display:block;font-size:9px}
-    #reset-view{margin-top:7px;padding:9px;font-size:10px}#legend .hint{display:block;margin-top:8px;text-align:center;font-size:8.5px}
-    #tip{display:none!important}.marker text{font-size:9.5px}
-  }
-  @media (hover:none),(pointer:coarse){#tip{display:none!important}}
+:root{color-scheme:dark;--ink:#edf7f5;--muted:#a8c2c5;--gold:#d9bd75;--gold2:#806b3e;--glass:rgba(5,18,28,.86);--line:rgba(211,190,128,.32);--focus:#fff1a8;--realm:#63d4c4;--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{overflow:hidden;background:#04121d;color:var(--ink);font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif}
+button,input,a{font:inherit}.skip{position:fixed;z-index:1000;top:8px;left:8px;transform:translateY(-150%);background:#fff;color:#111;padding:10px 14px;border-radius:8px}.skip:focus{transform:none}
+.app{height:100dvh;min-height:480px;display:flex;flex-direction:column;isolation:isolate;background:radial-gradient(circle at 50% 10%,#123346,#04111b 70%)}
+.app[data-layer="sky"]{--realm:#b7d8ff;background:radial-gradient(circle at 50% 0%,#324a68,#071827 72%)}.app[data-layer="deep"]{--realm:#69e4e7;background:radial-gradient(circle at 50% 0%,#073f53,#030d1b 75%)}
+.topbar{position:relative;z-index:30;display:grid;grid-template-columns:minmax(205px,1fr) auto minmax(300px,1fr);align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(3,14,23,.96),rgba(4,19,29,.86));box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.brand{min-width:0}.eyebrow{color:var(--gold);font-size:10px;letter-spacing:.25em;text-transform:uppercase}.brand h1{font-size:clamp(17px,1.55vw,24px);line-height:1;margin:3px 0 0;white-space:nowrap}.brand h1 span{color:var(--realm);font-weight:400}
+.realm-tabs{display:flex;gap:5px;padding:4px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.22)}.realm-tab{min-height:42px;border:0;border-radius:999px;color:var(--muted);background:transparent;padding:6px 13px;cursor:pointer;white-space:nowrap}.realm-tab small{display:block;font-size:9px;opacity:.7}.realm-tab[aria-pressed="true"]{color:#061521;background:linear-gradient(135deg,var(--realm),#f4e0a6);box-shadow:0 0 20px color-mix(in srgb,var(--realm),transparent 55%)}
+.commands{display:flex;justify-content:flex-end;gap:7px;min-width:0}.search-wrap{position:relative;flex:1;max-width:280px}.search{width:100%;height:42px;border:1px solid var(--line);border-radius:12px;padding:0 38px 0 13px;background:rgba(2,11,18,.65);color:var(--ink);outline:none}.search:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(255,241,168,.16)}.search-wrap::after{content:"⌕";position:absolute;right:13px;top:8px;color:var(--gold);font-size:22px;pointer-events:none}
+.cmd{min-width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:rgba(7,28,40,.8);color:var(--ink);cursor:pointer;padding:0 11px}.cmd:hover,.cmd:focus-visible{border-color:var(--focus);background:rgba(20,55,70,.95)}.cmd .wide{margin-left:5px;font-size:12px}.cmd[aria-pressed="false"]{opacity:.68}
+.search-results{position:absolute;display:none;z-index:50;top:49px;right:0;width:min(380px,calc(100vw - 24px));max-height:420px;overflow:auto;padding:7px;background:rgba(4,17,26,.98);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55)}.search-results[data-open="true"]{display:block}.search-result{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid rgba(255,255,255,.08);background:transparent;color:var(--ink);padding:10px;border-radius:8px;cursor:pointer}.search-result:hover,.search-result:focus-visible{background:rgba(105,228,231,.12);outline:1px solid var(--realm)}.search-result b{color:var(--gold);font-size:11px;letter-spacing:.08em}.search-result span{display:block;margin-top:3px;font-size:13px}.search-empty{padding:18px;color:var(--muted);font-size:13px;text-align:center}
+.workspace{position:relative;flex:1;min-height:0;overflow:hidden}.map-stage{position:absolute;inset:0;background:#04111b}.map-stage::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 48%,rgba(1,8,14,.46) 100%),linear-gradient(180deg,rgba(0,0,0,.16),transparent 16%,transparent 82%,rgba(0,0,0,.3));box-shadow:inset 0 0 70px rgba(0,0,0,.55)}
+.map-svg{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}.map-image{transition:opacity .26s ease}.map-image.loading{opacity:.25}.overlay-fog{pointer-events:none;opacity:.38;mix-blend-mode:screen}.app[data-layer="surface"] .overlay-fog{opacity:.14}.app[data-layer="deep"] .overlay-fog{opacity:.28}
+.region-node,.place-node{cursor:pointer;outline:none}.region-node:focus .node-ring,.place-node:focus .node-ring{stroke:var(--focus);stroke-width:6}.node-hit{fill:transparent}.node-ring{fill:rgba(4,19,29,.78);stroke-width:3}.region-node .node-ring{filter:drop-shadow(0 0 12px currentColor)}.region-count{fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle}.region-name{fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#07131d;stroke-width:5;stroke-linejoin:round}.region-sub{fill:#d4e4e5;text-anchor:middle;paint-order:stroke;stroke:#07131d;stroke-width:4}.place-node .node-ring{fill:rgba(4,17,27,.88);filter:drop-shadow(0 0 7px currentColor)}.place-node.echo .node-ring{stroke-dasharray:7 5}.place-no{fill:#fff;text-anchor:middle;dominant-baseline:middle;font-weight:700}.place-node.visited{opacity:.7}.place-node.selected .node-ring{stroke:var(--focus)!important;stroke-width:6}.place-node.latest .node-ring{animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%,100%{filter:drop-shadow(0 0 6px currentColor)}50%{filter:drop-shadow(0 0 22px currentColor)}}
+.region-dock{position:absolute;z-index:8;top:18px;left:18px;width:min(300px,calc(100vw - 36px));padding:13px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(4,18,29,.91),rgba(8,31,43,.76));backdrop-filter:blur(12px);box-shadow:0 16px 40px rgba(0,0,0,.32)}.realm-kicker{font-size:10px;color:var(--realm);letter-spacing:.17em;text-transform:uppercase}.region-dock h2{font-size:18px;margin:3px 0 3px}.region-dock p{font-size:11px;line-height:1.5;color:var(--muted);margin:0 0 10px}.region-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}.region-button{min-height:45px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(0,0,0,.2);color:var(--ink);text-align:left;padding:7px 9px;cursor:pointer}.region-button:hover,.region-button:focus-visible,.region-button[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c),transparent 83%)}.region-button b{display:block;font-size:11px}.region-button small{display:block;margin-top:2px;color:var(--muted);font-size:9px}.region-button em{float:right;color:var(--c);font-style:normal}
+.map-tools{position:absolute;z-index:8;left:18px;bottom:18px;display:flex;gap:7px}.map-tool{min-width:46px;height:46px;border:1px solid var(--line);border-radius:13px;background:var(--glass);color:var(--ink);cursor:pointer;padding:0 12px}.map-tool:hover,.map-tool:focus-visible{border-color:var(--focus)}.map-tool span{margin-left:4px;font-size:11px}.map-tool[hidden]{display:none}
+.realm-note{position:absolute;z-index:7;left:50%;bottom:20px;transform:translateX(-50%);max-width:min(520px,52vw);padding:8px 14px;border-radius:999px;background:rgba(3,14,22,.72);border:1px solid rgba(255,255,255,.13);color:#c9dadd;font-size:11px;text-align:center;pointer-events:none;backdrop-filter:blur(8px)}
+.detail{position:absolute;z-index:25;right:14px;top:14px;bottom:14px;width:min(390px,calc(100vw - 28px));display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:rgba(3,15,24,.97);box-shadow:0 24px 70px rgba(0,0,0,.58);transform:translateX(calc(100% + 24px));opacity:0;transition:transform .32s ease,opacity .2s ease}.detail[data-open="true"]{transform:none;opacity:1}.detail-hero{position:relative;aspect-ratio:16/9;background:#102633;overflow:hidden}.detail-hero img{width:100%;height:100%;object-fit:cover;display:block}.detail-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 52%,rgba(3,15,24,.96))}.detail-close{position:absolute;z-index:2;top:10px;right:10px;width:44px;height:44px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(0,0,0,.66);color:#fff;font-size:22px;cursor:pointer}.detail-body{padding:0 19px 18px;overflow:auto}.detail-ep{margin-top:-22px;position:relative;z-index:2;color:var(--gold);font-size:11px;letter-spacing:.13em;text-transform:uppercase}.detail h2{font-size:23px;line-height:1.2;margin:8px 0 8px}.detail-meta{font-size:12px;color:var(--muted);line-height:1.55}.detail-lore{margin:15px 0;padding:13px;border-left:2px solid var(--realm);background:rgba(255,255,255,.035);color:#cde0df;font-size:12px;line-height:1.65}.youtube{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:14px;background:linear-gradient(135deg,#ead28e,#a98338);color:#101217;text-decoration:none;font-weight:700;box-shadow:0 8px 26px rgba(0,0,0,.3)}.youtube:hover,.youtube:focus-visible{filter:brightness(1.12);outline:3px solid var(--focus);outline-offset:2px}.detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.detail-nav button{min-height:44px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);cursor:pointer}.detail-nav button:hover,.detail-nav button:focus-visible{border-color:var(--focus)}
+.sheet-handle{display:none}.unexplored{font-style:italic;color:#bdcbd2}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:980px){.topbar{grid-template-columns:auto 1fr;gap:7px;padding:8px 10px}.brand{grid-row:1;grid-column:1}.realm-tabs{grid-column:2;justify-self:end}.commands{grid-column:1/3}.search-wrap{max-width:none}.region-dock{width:250px}.wide{display:none!important}.detail{width:360px}.realm-note{max-width:45vw}}
+@media(max-width:620px){.app{min-height:420px}.topbar{display:flex;flex-wrap:wrap;gap:6px;padding:7px 8px}.brand{width:38%}.eyebrow{font-size:8px}.brand h1{font-size:15px}.realm-tabs{order:2;width:60%;margin-left:auto}.realm-tab{flex:1;min-width:0;min-height:44px;padding:4px 3px;font-size:10px}.realm-tab small{font-size:7px}.commands{order:3;width:100%}.search,.cmd{height:44px}.cmd{min-width:44px;padding:0 8px}.workspace{min-height:0}.map-svg{inset:0 auto 0 50%;width:auto;height:100%;aspect-ratio:8/5;transform:translateX(-50%)}.region-dock{top:auto;bottom:64px;left:8px;right:8px;width:auto;padding:8px 9px;border-radius:15px}.region-dock h2,.region-dock>p,.realm-kicker{display:none}.region-buttons{display:flex;overflow-x:auto;scrollbar-width:none;gap:6px}.region-button{flex:0 0 auto;min-width:128px;min-height:44px}.region-button small{font-size:8px}.map-tools{left:8px;bottom:14px}.map-tool{height:44px}.realm-note{display:none}.detail{position:absolute;top:auto;left:0;right:0;bottom:0;width:100%;max-height:72dvh;border-radius:24px 24px 0 0;border-bottom:0;transform:translateY(calc(100% + 14px));padding-bottom:var(--safe-b)}.detail[data-open="true"]{transform:none}.sheet-handle{display:block;width:52px;height:5px;background:rgba(255,255,255,.28);border-radius:99px;margin:8px auto 0}.detail-hero{aspect-ratio:16/9}.detail h2{font-size:20px}.detail-body{padding-bottom:14px}.detail-close{top:15px}.search-results{position:fixed;top:112px;left:8px;right:8px;width:auto;max-height:56dvh}.map-stage::before{box-shadow:inset 0 0 35px rgba(0,0,0,.5)}}
+@media(max-width:350px){.brand{width:34%}.brand h1{white-space:normal;line-height:1.05}.realm-tabs{width:64%}.realm-tab{font-size:9px}.region-button{min-width:112px}.search{font-size:12px}}
+@media(max-height:560px) and (orientation:landscape){.app{min-height:0}.topbar{display:grid;grid-template-columns:190px 260px minmax(0,1fr);grid-template-rows:54px;flex:none;padding:4px 8px}.brand{grid-column:1;grid-row:1;width:auto}.realm-tabs{grid-column:2;grid-row:1;width:auto;order:initial}.commands{grid-column:3;grid-row:1;width:auto;order:initial}.realm-tab{min-height:42px}.search,.cmd{height:42px}.cmd{min-width:42px}.region-dock{left:8px;right:auto;top:8px;bottom:8px;width:215px}.region-buttons{display:grid;overflow:auto}.region-button{min-width:0}.detail{left:auto;right:0;top:0;bottom:0;width:350px;max-height:none;border-radius:20px 0 0 20px;transform:translateX(105%)}.detail[data-open="true"]{transform:none}.detail-hero{aspect-ratio:16/7}.map-tools{left:230px;bottom:8px}.search-results{top:56px;left:auto;right:8px;width:360px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 </style>
 </head>
 <body>
-<div id="stage">
-  <svg id="map" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" role="img"
-       aria-label="Interactive illustrated atlas of Hollowmere with 83 charted destinations">
-    <defs>
-      <radialGradient id="vign" cx="50%" cy="46%" r="72%">
-        <stop offset="0%" stop-color="#16233e"/><stop offset="72%" stop-color="#0d1526"/>
-        <stop offset="100%" stop-color="#080d19"/>
-      </radialGradient>
-      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#12253d"/><stop offset="100%" stop-color="#0a1a30"/>
-      </linearGradient>
-      <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
-        <feGaussianBlur stdDeviation="3.2" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur stdDeviation="26"/>
-      </filter>
-    </defs>
-
-    <rect width="1600" height="1000" fill="url(#vign)"/>
-    <image href="assets/hollowmere-world-map.png" x="0" y="0" width="1600" height="1000"
-           preserveAspectRatio="none" aria-label="Hand-painted map of the realm of Hollowmere"/>
-    <rect width="1600" height="1000" fill="#06121c" opacity=".08" pointer-events="none"/>
-
-    <!-- region auras and labels are kept as a subtle interactive overlay -->
-    <g id="auras"></g>
-
-    <!-- compass rose -->
-    <g transform="translate(1490,120)" opacity=".74" stroke="#e0c582" fill="#e0c582">
-      <circle r="34" fill="none" stroke-width="1"/><circle r="3" stroke="none"/>
-      <path d="M0,-30 L6,0 L0,30 L-6,0 Z" stroke="none" opacity=".9"/>
-      <path d="M-30,0 L0,-5 L30,0 L0,5 Z" stroke="none" opacity=".45"/>
-      <text y="-42" text-anchor="middle" font-size="13" stroke="none" font-family="Georgia">N</text>
-    </g>
-
-    <g id="markers"></g>
-
-    <!-- Canonical Luma v2 swimming loop, wandering gently across the atlas -->
-    <g id="luma" filter="url(#glow)" opacity=".78" pointer-events="none">
-      <title>Luma — the slender swimming wisp of Hollowmere</title>
-      <image href="assets/luma-swim-v2-atlas.webp" x="-10.5" y="-32.75" width="21" height="65.5"
-             preserveAspectRatio="xMidYMid meet"/>
-      <animateMotion dur="187.5s" repeatCount="indefinite" rotate="auto"
-        path="M300,320 C520,240 760,180 980,230 C1200,280 1380,420 1340,560 C1300,700 1080,760 860,800 C640,840 480,760 470,660 C460,560 600,520 800,545 C960,565 1020,460 900,380 C780,300 500,380 300,320"/>
-    </g>
-  </svg>
-
-  <div id="cartouche" class="panel">
-    <div class="eyebrow">Sparkling Hollow · The Living World</div>
-    <h1>The Atlas of Hollowmere</h1>
-    <div class="jp">ホロウミア大地図 — 全作品をめぐる旅の記録</div>
-    <div class="sub">Every light marks an hour of music and a place already visited.
-      Hover to remember it; click to return.<br>
-      灯りひとつが1時間の物語。触れて場所の記憶を、クリックで再びその地へ。</div>
-    <div id="counter"></div>
-    <div id="version-stamp">Atlas v3 · Mobile · 11 Aug 2026</div>
+<a class="skip" href="#region-list">地図を飛ばして地域一覧へ</a>
+<div class="app" id="app" data-layer="surface">
+  <header class="topbar">
+    <div class="brand"><div class="eyebrow">Sparkling Hollow · Living Atlas</div><h1>Hollowmere <span>Atlas</span></h1></div>
+    <nav class="realm-tabs" aria-label="世界層">
+      <button class="realm-tab" data-layer="surface" aria-pressed="true">地上界<small>83 destinations</small></button>
+      <button class="realm-tab" data-layer="sky" aria-pressed="false">天空界<small>8 echoes</small></button>
+      <button class="realm-tab" data-layer="deep" aria-pressed="false">深水界<small>8 echoes</small></button>
+    </nav>
+    <div class="commands">
+      <div class="search-wrap"><label class="sr-only" for="search">地点を検索</label><input id="search" class="search" type="search" autocomplete="off" placeholder="Episode・題名・地域を検索"><div id="search-results" class="search-results" role="listbox"></div></div>
+      <button id="latest" class="cmd" title="最新の灯りへ">✦<span class="wide">最新</span></button>
+      <button id="call-luma" class="cmd" title="Lumaに案内してもらう">◌<span class="wide">Luma</span></button>
+      <button id="motion-toggle" class="cmd" aria-pressed="true" title="動きを止める">≈</button>
+    </div>
+  </header>
+  <div class="workspace">
+    <main id="map-main" class="map-stage" aria-label="Hollowmereの三界地図">
+      <svg id="atlas-map" class="map-svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid meet" aria-labelledby="map-title map-desc">
+        <title id="map-title">Hollowmere Atlas</title><desc id="map-desc">地域を選ぶとズームし、物語の地点を探索できます。</desc>
+        <defs><filter id="soft-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <image id="map-image" class="map-image" href="assets/hollowmere-surface-map-v4.webp" x="0" y="0" width="1600" height="1000" preserveAspectRatio="none"/>
+        <g id="realm-wash" class="overlay-fog"></g><g id="routes" aria-hidden="true"></g><g id="nodes"></g>
+        <path id="luma-path" d="M210 780 C420 630 400 340 670 340 S1050 620 1400 320 S1250 860 820 830 S360 900 210 780" fill="none" stroke="none"/>
+        <g id="luma-guide" role="img" aria-label="三界を泳ぐLuma" visibility="hidden"><image id="luma-image" x="-65" y="-147" width="130" height="294" preserveAspectRatio="xMidYMid meet"/><animateMotion id="luma-motion" dur="187.5s" repeatCount="indefinite" rotate="auto" begin="indefinite"><mpath href="#luma-path"/></animateMotion></g>
+      </svg>
+      <section class="region-dock" aria-labelledby="realm-heading"><div id="realm-kicker" class="realm-kicker"></div><h2 id="realm-heading"></h2><p id="realm-copy"></p><div id="region-list" class="region-buttons"></div></section>
+      <div class="map-tools"><button id="overview" class="map-tool" hidden>⌂ <span>全景</span></button><button id="luma-map" class="map-tool">◌ <span>Lumaを呼ぶ</span></button></div>
+      <div id="realm-note" class="realm-note"></div>
+    </main>
+    <aside id="detail" class="detail" aria-labelledby="detail-title" aria-hidden="true">
+      <div class="sheet-handle" aria-hidden="true"></div><div class="detail-hero"><img id="detail-image" alt="" loading="lazy"><button id="detail-close" class="detail-close" aria-label="詳細を閉じる">×</button></div>
+      <div class="detail-body"><div id="detail-ep" class="detail-ep"></div><h2 id="detail-title" tabindex="-1"></h2><div id="detail-meta" class="detail-meta"></div><div id="detail-lore" class="detail-lore"></div><a id="youtube" class="youtube" target="_blank" rel="noopener">YouTubeでこの場所を訪れる ↗</a><div class="detail-nav"><button id="prev-place">← 前の物語</button><button id="next-place">次の物語 →</button></div></div>
+    </aside>
+    <div id="announcer" class="sr-only" aria-live="polite"></div>
   </div>
-
-  <div id="legend" class="panel"><h2>Regions of Hollowmere</h2><div id="legrows"></div>
-    <button id="reset-view" type="button" hidden>← 全体地図へ戻る</button>
-    <div class="hint">地域名をクリックでズーム／もう一度クリックで全体地図へ</div>
-  </div>
-
-  <div id="tip"><img id="tipimg" alt=""><div class="body">
-    <div class="ep" id="tipep"></div><div class="name" id="tipname"></div><div class="meta" id="tipmeta"></div>
-  </div></div>
-
-  <section id="mobile-place-card" class="panel" hidden aria-live="polite" aria-label="選択した場所">
-    <button id="mobile-place-close" type="button" aria-label="場所カードを閉じる">×</button>
-    <div class="mp-eyebrow" id="mobile-place-ep"></div>
-    <div class="mp-name" id="mobile-place-name"></div>
-    <div class="mp-meta" id="mobile-place-meta"></div>
-    <a id="mobile-place-link" href="#" target="_blank" rel="noopener">YouTubeでこの場所を訪れる ↗</a>
-  </section>
-
-  <div id="dedication">
-    First charted from the Rainkeeper's Map Room · 7 July 2026<br>
-    <span class="sig">A realm shaped by Meloniki &nbsp;·&nbsp; Sparkling Hollow</span><br>
-    歩いた場所は灯りになり、まだ見ぬ場所は道になる。
-  </div>
-  <div id="map-credit">Illustrated atlas · Hover a light to begin</div>
 </div>
-
 <script>
 "use strict";
-/* ================= regions ================= */
-const REGIONS = {
-  town:    {label:"Hollowmere Town",    jp:"ホロウミアの街",   color:"#ffb347", cx:800,  cy:560, rx:170, ry:112},
-  forest:  {label:"The Glimmerwood",    jp:"きらめきの森",     color:"#6fd08c", cx:360,  cy:340, rx:215, ry:150},
-  library: {label:"Athenaeum District", jp:"図書館街",         color:"#d4af37", cx:500,  cy:700, rx:160, ry:104},
-  sacred:  {label:"Moonveil Reaches",   jp:"月帳の霊峰",       color:"#b48ce8", cx:950,  cy:255, rx:250, ry:120},
-  highland:{label:"Windroad Highlands", jp:"風の道高地",       color:"#e8927c", cx:1345, cy:470, rx:160, ry:145},
-  fields:  {label:"Duskfields Beyond",  jp:"たそがれの丘",     color:"#e08cc0", cx:1225, cy:755, rx:170, ry:96},
-  water:   {label:"The Mirrorcoast",    jp:"鏡の海岸",         color:"#6cc3e0", cx:820,  cy:868, rx:330, ry:62}
+const REALMS={
+ surface:{label:"Hollowmere Realm",jp:"ホロウミア地上界",asset:"assets/hollowmere-surface-map-v4.webp",fallback:"assets/hollowmere-world-map.png",copy:"森・書庫・聖域・町を灯りで結ぶ、生きている地上界。",note:"83の物語はすべてここから始まります。地域を選ぶと個別の灯りが現れます。",path:"M210 780 C420 630 400 340 670 340 S1050 620 1400 320 S1250 860 820 830 S360 900 210 780",regions:{
+  town:{label:"Hollowmere Town",jp:"ホロウミアの町",color:"#ffb347",cx:800,cy:560,view:[575,385,450,350]},forest:{label:"The Glimmerwood",jp:"きらめきの森",color:"#6fd08c",cx:360,cy:340,view:[80,120,560,440]},library:{label:"Athenaeum District",jp:"大書庫街",color:"#d4af37",cx:500,cy:700,view:[285,545,430,310]},sacred:{label:"Moonveil Reaches",jp:"月帳の聖域",color:"#b48ce8",cx:950,cy:255,view:[620,80,660,350]},highland:{label:"Windroad Highlands",jp:"風渡り高地",color:"#e8927c",cx:1345,cy:470,view:[1130,270,430,400]},fields:{label:"Duskfields Beyond",jp:"黄昏の野",color:"#e08cc0",cx:1225,cy:755,view:[995,610,460,300]},water:{label:"The Mirrorcoast",jp:"鏡の海岸",color:"#6cc3e0",cx:820,cy:868,view:[360,760,920,230]}}},
+ sky:{label:"The Starward Veil",jp:"星渡りの天蓋",asset:"assets/hollowmere-starward-map-v1.webp",fallback:"assets/hollowmere-starward-map-v1-master.png",copy:"星河が空へ逆流し、雨冠で地上へ還る浮島の天蓋。",note:"8つのEchoが地上の物語と共鳴しています。未踏の余白は、これから開く空の歴史です。",path:"M180 700 C410 620 380 420 610 370 S880 760 1080 650 S1410 480 1310 300 S920 180 720 260 S420 250 180 700",regions:{
+  asterwake:{label:"Asterwake Isles",jp:"星航の浮島群",color:"#a8dcff",cx:496,cy:480,view:[210,270,570,420]},raincrown:{label:"Raincrown Heights",jp:"雨冠の高天",color:"#d8d5ff",cx:960,cy:240,view:[665,70,590,360]},cloudstep:{label:"Cloudstep Thresholds",jp:"雲段の門境",color:"#f1a978",cx:1248,cy:580,view:[1010,345,480,470]},starstream:{label:"Starstream Expanse",jp:"星河の天流",color:"#66e6e0",cx:928,cy:660,view:[650,470,560,400]}}},
+ deep:{label:"The Deepmere",jp:"深き水鏡界",asset:"assets/hollowmere-deepmere-map-v1.webp",fallback:"assets/hollowmere-deepmere-map-v1-master.png",copy:"星水と記憶が眠り、月根と古い書庫が世界を支える深界。",note:"8つのEchoが深水の記憶を映します。水増しされた地点はなく、霧の向こうは本当に未踏です。",path:"M180 260 C350 460 520 310 700 460 S980 740 1270 690 S1400 390 1160 300 S780 220 620 600 S320 770 180 260",regions:{
+  moonroot:{label:"Moonroot Deeps",jp:"月根の深淵",color:"#c594ff",cx:400,cy:380,view:[135,180,530,420]},glasswater:{label:"Glasswater Archive",jp:"硝子水晶の書庫",color:"#e1c777",cx:544,cy:680,view:[270,500,550,390]},bluerain:{label:"Blue-Rain Hollows",jp:"青雨の水窟",color:"#58e6e8",cx:912,cy:400,view:[620,190,585,430]},runetide:{label:"Runetide Reach",jp:"ルーン潮の海域",color:"#9f92ff",cx:1168,cy:700,view:[885,500,565,390]}}}
 };
-
-/* ============ the 83 destinations of Sparkling Hollow ============ */
-/* n=episode, id=YouTube videoId, ts=published unix time, d=ISO date, r=region */
-const PLACES = [
- {n:1,  id:"UXizIHMZxo0", ts:1778164489, r:"town",    name:"Celtic Harp by the Fireplace"},
- {n:2,  id:"x0mspZh8t7s", ts:1778169437, r:"forest",  name:"Rainy Forest Celtic Music"},
- {n:3,  id:"DWWTc4YOqGI", ts:1778403637, r:"library", name:"Celtic Lofi Library Night"},
- {n:4,  id:"etXuzEk_IDg", ts:1778335404, r:"forest",  name:"Misty Celtic Stream"},
- {n:5,  id:"TzYUrObpKxA", ts:1778417116, r:"sacred",  name:"Bamboo Shrine Mist"},
- {n:6,  id:"42Zo4I15gGE", ts:1778430852, r:"water",   name:"Crystal Spring Ruins"},
- {n:7,  id:"i-LOY6jY0rE", ts:1778502937, r:"library", name:"Emerald Rain Library"},
- {n:8,  id:"fYUyPNkvQsM", ts:1778515179, r:"sacred",  name:"Rainy Shrine Study Hall"},
- {n:9,  id:"O02fBv9vgsY", ts:1778590913, r:"library", name:"Crystal Underwater Library"},
- {n:10, id:"8DN1YntX4dc", ts:1778623513, r:"library", name:"Crystal Rain Study Hall"},
- {n:11, id:"H6c9fTyuPC4", ts:1778682978, r:"library", name:"Rainy Crystal Library"},
- {n:12, id:"6ighOqv1Ks0", ts:1778765236, r:"forest",  name:"Rainy Celtic Forest Workshop"},
- {n:13, id:"Pr_y5s-_YkE", ts:1778801423, r:"sacred",  name:"Rainy Crystal Observatory"},
- {n:14, id:"1aqv-AKnILE", ts:1778932802, r:"town",    name:"Rainy Crystal Alchemist Room"},
- {n:15, id:"92prZGbHW3c", ts:1778935933, r:"highland",name:"Morning Celtic Trail"},
- {n:16, id:"DNrTuflqjN4", ts:1779019626, r:"library", name:"Rainy Celtic Coding Sanctuary"},
- {n:17, id:"jiKQeO3FUaQ", ts:1779101637, r:"forest",  name:"Rainy Forest Study Sanctuary"},
- {n:18, id:"eE_lJGlHnDg", ts:1779110224, r:"forest",  name:"Rainy Celtic Forest Music"},
- {n:19, id:"dz6yUF4G94o", ts:1779192012, r:"library", name:"The Library That Holds the Rain"},
- {n:20, id:"LxTQfj4P1T0", ts:1779197485, r:"sacred",  name:"The Spell and the Stone"},
- {n:21, id:"UYwPhdNafhc", ts:1779342938, r:"fields",  name:"The Village Beyond the Mist"},
- {n:22, id:"jGRBAi5UNUE", ts:1779368659, r:"water",   name:"Where the Blue Rain Sleeps"},
- {n:23, id:"MzkTiBDw4d4", ts:1779457849, r:"forest",  name:"Where the White Deer Watches"},
- {n:24, id:"ZV2-wmthl_g", ts:1779494943, r:"sacred",  name:"Where the Druid Fire Still Glows"},
- {n:25, id:"idDnK2cAEyg", ts:1779580014, r:"sacred",  name:"The Rainlit Alchemist Shrine"},
- {n:26, id:"kBSLulmQnD0", ts:1779601981, r:"sacred",  name:"Where the Rain Writes Runes"},
- {n:27, id:"l5_N50Is8IY", ts:1779625709, r:"highland",name:"Where the Ember Road Begins"},
- {n:28, id:"j4149cv9Utk", ts:1779634973, r:"fields",  name:"Where the Sky Lanterns Read"},
- {n:29, id:"UUC-cd2RCuo", ts:1779732989, r:"sacred",  name:"Where Blue Rain Guards the Shrine"},
- {n:30, id:"jEPLZsvzIMs", ts:1779758117, r:"town",    name:"Where the Hearth Lanterns Wake"},
- {n:31, id:"pRutjSaHgLs", ts:1779806729, r:"town",    name:"Where the Rain Keeps the Workshop"},
- {n:32, id:"i2Mpoe3YMCQ", ts:1779885528, r:"sacred",  name:"Where the Mist Opens to the Shrine"},
- {n:33, id:"aZWSveexAAA", ts:1779948962, r:"forest",  name:"Rainy Celtic Forest Library"},
- {n:34, id:"B6zMJ7-kNrk", ts:1780056035, r:"water",   name:"Rainy Celtic Crystal Spring"},
- {n:35, id:"jdBm_powmRY", ts:1780142437, r:"water",   name:"Where the Crystal Falls Sing"},
- {n:36, id:"OlkH15sPwh0", ts:1780199777, r:"water",   name:"Whispering Hollow Springs"},
- {n:37, id:"dvSah6yCpgw", ts:1780236660, r:"sacred",  name:"Moonlit Druid Observatory"},
- {n:38, id:"-Q_aB_vUerg", ts:1780314837, r:"forest",  name:"The Worldtree of Starlight Hollow"},
- {n:39, id:"Kw0STLV9ADM", ts:1780401322, r:"library", name:"The Celestial Library of Hollow"},
- {n:40, id:"RKgSMIQkgEE", ts:1780486040, r:"sacred",  name:"The Starfall Temple"},
- {n:41, id:"mo5_FfGrrKc", ts:1780571553, r:"fields",  name:"The Lantern Village Beyond the Mist"},
- {n:42, id:"sFHP_vUtgYo", ts:1780665343, r:"town",    name:"The Midnight Market of Hollowmere"},
- {n:43, id:"1bO-kCCeWx4", ts:1780747205, r:"town",    name:"The Rainlit Guildhall of Hollowmere"},
- {n:44, id:"jobmbnWxtJ0", ts:1780833632, r:"town",    name:"The Dawn Gate of Hollowmere"},
- {n:45, id:"3F_4fCSOlYg", ts:1780920037, r:"highland",name:"The Windroad Ruins Beyond Hollowmere"},
- {n:46, id:"3wY9u6b7M5s", ts:1780996444, r:"library", name:"The Crystal Archive Beneath Hollowmere"},
- {n:47, id:"7XD4RuWzblQ", ts:1781003523, r:"sacred",  name:"The Astral Observatory of Hollowmere"},
- {n:48, id:"r_b22O9DbIY", ts:1781072073, r:"water",   name:"The Moonlit Rune Harbor of Hollowmere"},
- {n:49, id:"eYtlASpe88g", ts:1781184612, r:"library", name:"The Sunlit Library of Hollowmere"},
- {n:50, id:"lq51FRPcqro", ts:1781287425, r:"town",    name:"The Heart of Hollowmere"},
- {n:51, id:"S6WD1RlQT4k", ts:1781500359, r:"fields",  name:"The Twilight Blossoms of Hollowmere"},
- {n:52, id:"xOj28vmx5NQ", ts:1781626704, r:"town",    name:"The Ember Hearth of Hollowmere"},
- {n:53, id:"A0SINwxYy68", ts:1781694035, r:"library", name:"The Rainlit Library of Hollowmere"},
- {n:54, id:"zj7WH6NwLKY", ts:1781728438, r:"highland",name:"Wandering Piper's Road"},
- {n:55, id:"FxFvyrA9LMI", ts:1781827803, r:"water",   name:"The Moonwell of Hollowmere"},
- {n:56, id:"UKz5xFkUtOs", ts:1781870776, r:"town",    name:"The Lantern Market of Hollowmere"},
- {n:57, id:"IdKdZ0vTx1c", ts:1782007044, r:"sacred",  name:"The Rainfall Sanctuary of Hollowmere"},
- {n:58, id:"9QEEiYL2fMg", ts:1782042055, r:"highland",name:"The Windroad Highlands of Hollowmere"},
- {n:59, id:"G66sH7JWKks", ts:1782212404, r:"water",   name:"The Sunlit Waterways of Hollowmere"},
- {n:60, id:"RIk2oLxDVRc", ts:1782298821, r:"forest",  name:"The Glimmerwood of Hollowmere"},
- {n:61, id:"KItwZd8VvPE", ts:1782457534, r:"town",    name:"The Winterhearth of Hollowmere"},
- {n:62, id:"AQUFpX-1v-U", ts:1782635421, r:"fields",  name:"The Lavender Duskfields Beyond Hollowmere"},
- {n:63, id:"AgF8hI1B-gI", ts:1782692023, r:"town",    name:"The Copperbell Court of Hollowmere"},
- {n:64, id:"bCMi1OsW_6M", ts:1782860756, r:"sacred",  name:"The Moonveil Circle of Hollowmere"},
- {n:65, id:"bMIVo2Tydcc", ts:1782950271, r:"highland",name:"The Skybridge Sanctum of Hollowmere"},
- {n:66, id:"alL4egUYQLE", ts:1783030930, r:"town",    name:"The Rainkeeper's Map Room of Hollowmere"},
- {n:67, id:"ikYeO1qwfH8", ts:1783259392, r:"water",   name:"The Seacliff Waystation of Hollowmere"},
- {n:68, id:"DJB_kJ7qdow", d:"2026-07-08", r:"forest",   name:"The Mossglass Conservatory of Hollowmere"},
- {n:69, id:"MiiTXCGx9e8", d:"2026-07-09", r:"highland", name:"The Goldenleaf Crossing of Hollowmere"},
- {n:70, id:"A0iLcM8eReE", d:"2026-07-13", r:"water",    name:"The Duskpool Bathhouse of Hollowmere"},
- {n:71, id:"cbOoGMDyLNo", d:"2026-07-14", r:"forest",   name:"The Rainy Forest Refuge of Hollowmere"},
- {n:72, id:"9QEEbqZHzH4", d:"2026-07-17", r:"highland", name:"The First Gate of Hollowmere"},
- {n:73, id:"_Lts7p3QbgM", d:"2026-07-18", r:"water",    name:"Where the Star River Leads"},
- {n:74, id:"S6J7JxJ8qxM", d:"2026-07-22", r:"forest",   name:"The Hearth Beyond the Rainy Pines"},
- {n:75, id:"rxHqSTO6ZFc", d:"2026-07-24", r:"water",    name:"The Lantern Keeper of Mistwood Bridge"},
- {n:76, id:"UrrZ9SYQVzQ", d:"2026-07-28", r:"fields",   name:"The Rainlit Village of Silverpine River"},
- {n:77, id:"1MpncAp9I_4", d:"2026-07-29", r:"town",     name:"The Seven Lantern Inn"},
- {n:78, id:"vQWQRI6rrj0", d:"2026-07-30", r:"sacred",   name:"The Hidden Rowan Shrine"},
- {n:79, id:"2au-44PRRiM", d:"2026-08-02", r:"water",    name:"The Moonroot Grotto"},
- {n:80, id:"ss-gbT45_uU", d:"2026-08-05", r:"town",     name:"The Emberfiddle Tavern"},
- {n:81, id:"zltElhVcoPM", d:"2026-08-08", r:"sacred",   name:"The Rainbell Abbey"},
- {n:82, id:"7rkW2Cj5nK4", d:"2026-08-11", r:"sacred",   name:"The Rainbound Orrery"},
- {n:83, id:"0vFtKtxKOKU", d:"2026-08-13", r:"library",  state:"scheduled", name:"The Silver Quill Scriptorium"}
+const POS={1:[829.7,560],2:[402,340],3:[531.3,700],4:[309.9,372],5:[991.1,255],6:[882,868],7:[462.7,722.2],8:[901.1,276.5],9:[505.6,658.4],10:[546,739],11:[415.9,690.3],12:[367.6,280],13:[957.4,214.6],14:[764.6,581.4],15:[1383.3,470],16:[579.5,667.1],17:[421.8,396.2],18:[247,326.1],19:[473.5,764.2],20:[1010.4,292.8],21:[1272,755],22:[746.1,880.7],23:[466.8,292.6],24:[839.6,245.6],25:[1054.3,223.2],26:[915.2,317.2],27:[1299.3,507.9],28:[1169,784],29:[883.7,193.7],30:[805.3,519.9],31:[843.7,597.6],32:[1093.8,280.2],33:[324.3,432.5],34:[831.1,844.2],35:[911.1,890.3],36:[653.4,862.5],37:[800.5,284.6],38:[292.1,248.8],39:[449.5,636.7],40:[1022,181.1],41:[1233.4,700.7],42:[720.1,550.7],43:[875.5,528.4],44:[774.8,621.8],45:[1351.9,398.9],46:[609.5,726],47:[1003.2,336.4],48:[977.4,849.2],49:[386.1,730.6],50:[752,499.1],51:[1294.1,805.9],52:[904.1,585],53:[554.9,623.8],54:[1401.3,536.6],55:[767.4,904.7],56:[691.8,589.4],57:[789.7,210.4],58:[1242,453.5],59:[719.9,831.8],60:[507.2,377.5],61:[852.1,486.6],62:[1098.7,742.4],63:[838.5,640.9],64:[1138,235.2],65:[1442.3,413.9],66:[684,515.7],67:[1037.1,882.9],68:[207,384.1],69:[1312.5,579.5],70:[594.3,885.5],71:[433.7,230.1],72:[1283.1,362],73:[928.7,824.4],74:[414.5,461.1],75:[900.3,916.1],76:[1344.4,712.1],77:[936.1,540.3],78:[835.3,333.3],79:[578.1,841.7],80:[717,637.8],81:[923.5,156.9],82:[1112.6,320.8],83:[540.5,784]};
+const PLACES=[
+ {n:1,id:"UXizIHMZxo0",ts:1778164489,r:"town",name:"Celtic Harp by the Fireplace"},{n:2,id:"x0mspZh8t7s",ts:1778169437,r:"forest",name:"Rainy Forest Celtic Music"},{n:3,id:"DWWTc4YOqGI",ts:1778403637,r:"library",name:"Celtic Lofi Library Night"},{n:4,id:"etXuzEk_IDg",ts:1778335404,r:"forest",name:"Misty Celtic Stream"},{n:5,id:"TzYUrObpKxA",ts:1778417116,r:"sacred",name:"Bamboo Shrine Mist"},{n:6,id:"42Zo4I15gGE",ts:1778430852,r:"water",name:"Crystal Spring Ruins"},{n:7,id:"i-LOY6jY0rE",ts:1778502937,r:"library",name:"Emerald Rain Library"},{n:8,id:"fYUyPNkvQsM",ts:1778515179,r:"sacred",name:"Rainy Shrine Study Hall"},{n:9,id:"O02fBv9vgsY",ts:1778590913,r:"library",name:"Crystal Underwater Library"},{n:10,id:"8DN1YntX4dc",ts:1778623513,r:"library",name:"Crystal Rain Study Hall"},{n:11,id:"H6c9fTyuPC4",ts:1778682978,r:"library",name:"Rainy Crystal Library"},{n:12,id:"6ighOqv1Ks0",ts:1778765236,r:"forest",name:"Rainy Celtic Forest Workshop"},{n:13,id:"Pr_y5s-_YkE",ts:1778801423,r:"sacred",name:"Rainy Crystal Observatory"},{n:14,id:"1aqv-AKnILE",ts:1778932802,r:"town",name:"Rainy Crystal Alchemist Room"},{n:15,id:"92prZGbHW3c",ts:1778935933,r:"highland",name:"Morning Celtic Trail"},{n:16,id:"DNrTuflqjN4",ts:1779019626,r:"library",name:"Rainy Celtic Coding Sanctuary"},{n:17,id:"jiKQeO3FUaQ",ts:1779101637,r:"forest",name:"Rainy Forest Study Sanctuary"},{n:18,id:"eE_lJGlHnDg",ts:1779110224,r:"forest",name:"Rainy Celtic Forest Music"},{n:19,id:"dz6yUF4G94o",ts:1779192012,r:"library",name:"The Library That Holds the Rain"},{n:20,id:"LxTQfj4P1T0",ts:1779197485,r:"sacred",name:"The Spell and the Stone"},{n:21,id:"UYwPhdNafhc",ts:1779342938,r:"fields",name:"The Village Beyond the Mist"},{n:22,id:"jGRBAi5UNUE",ts:1779368659,r:"water",name:"Where the Blue Rain Sleeps"},{n:23,id:"MzkTiBDw4d4",ts:1779457849,r:"forest",name:"Where the White Deer Watches"},{n:24,id:"ZV2-wmthl_g",ts:1779494943,r:"sacred",name:"Where the Druid Fire Still Glows"},{n:25,id:"idDnK2cAEyg",ts:1779580014,r:"sacred",name:"The Rainlit Alchemist Shrine"},{n:26,id:"kBSLulmQnD0",ts:1779601981,r:"sacred",name:"Where the Rain Writes Runes"},{n:27,id:"l5_N50Is8IY",ts:1779625709,r:"highland",name:"Where the Ember Road Begins"},{n:28,id:"j4149cv9Utk",ts:1779634973,r:"fields",name:"Where the Sky Lanterns Read"},{n:29,id:"UUC-cd2RCuo",ts:1779732989,r:"sacred",name:"Where Blue Rain Guards the Shrine"},{n:30,id:"jEPLZsvzIMs",ts:1779758117,r:"town",name:"Where the Hearth Lanterns Wake"},{n:31,id:"pRutjSaHgLs",ts:1779806729,r:"town",name:"Where the Rain Keeps the Workshop"},{n:32,id:"i2Mpoe3YMCQ",ts:1779885528,r:"sacred",name:"Where the Mist Opens to the Shrine"},{n:33,id:"aZWSveexAAA",ts:1779948962,r:"forest",name:"Rainy Celtic Forest Library"},{n:34,id:"B6zMJ7-kNrk",ts:1780056035,r:"water",name:"Rainy Celtic Crystal Spring"},{n:35,id:"jdBm_powmRY",ts:1780142437,r:"water",name:"Where the Crystal Falls Sing"},{n:36,id:"OlkH15sPwh0",ts:1780199777,r:"water",name:"Whispering Hollow Springs"},{n:37,id:"dvSah6yCpgw",ts:1780236660,r:"sacred",name:"Moonlit Druid Observatory"},{n:38,id:"-Q_aB_vUerg",ts:1780314837,r:"forest",name:"The Worldtree of Starlight Hollow"},{n:39,id:"Kw0STLV9ADM",ts:1780401322,r:"library",name:"The Celestial Library of Hollow"},{n:40,id:"RKgSMIQkgEE",ts:1780486040,r:"sacred",name:"The Starfall Temple"},{n:41,id:"mo5_FfGrrKc",ts:1780571553,r:"fields",name:"The Lantern Village Beyond the Mist"},{n:42,id:"sFHP_vUtgYo",ts:1780665343,r:"town",name:"The Midnight Market of Hollowmere"},{n:43,id:"1bO-kCCeWx4",ts:1780747205,r:"town",name:"The Rainlit Guildhall of Hollowmere"},{n:44,id:"jobmbnWxtJ0",ts:1780833632,r:"town",name:"The Dawn Gate of Hollowmere"},{n:45,id:"3F_4fCSOlYg",ts:1780920037,r:"highland",name:"The Windroad Ruins Beyond Hollowmere"},{n:46,id:"3wY9u6b7M5s",ts:1780996444,r:"library",name:"The Crystal Archive Beneath Hollowmere"},{n:47,id:"7XD4RuWzblQ",ts:1781003523,r:"sacred",name:"The Astral Observatory of Hollowmere"},{n:48,id:"r_b22O9DbIY",ts:1781072073,r:"water",name:"The Moonlit Rune Harbor of Hollowmere"},{n:49,id:"eYtlASpe88g",ts:1781184612,r:"library",name:"The Sunlit Library of Hollowmere"},{n:50,id:"lq51FRPcqro",ts:1781287425,r:"town",name:"The Heart of Hollowmere"},{n:51,id:"S6WD1RlQT4k",ts:1781500359,r:"fields",name:"The Twilight Blossoms of Hollowmere"},{n:52,id:"xOj28vmx5NQ",ts:1781626704,r:"town",name:"The Ember Hearth of Hollowmere"},{n:53,id:"A0SINwxYy68",ts:1781694035,r:"library",name:"The Rainlit Library of Hollowmere"},{n:54,id:"zj7WH6NwLKY",ts:1781728438,r:"highland",name:"Wandering Piper's Road"},{n:55,id:"FxFvyrA9LMI",ts:1781827803,r:"water",name:"The Moonwell of Hollowmere"},{n:56,id:"UKz5xFkUtOs",ts:1781870776,r:"town",name:"The Lantern Market of Hollowmere"},{n:57,id:"IdKdZ0vTx1c",ts:1782007044,r:"sacred",name:"The Rainfall Sanctuary of Hollowmere"},{n:58,id:"9QEEiYL2fMg",ts:1782042055,r:"highland",name:"The Windroad Highlands of Hollowmere"},{n:59,id:"G66sH7JWKks",ts:1782212404,r:"water",name:"The Sunlit Waterways of Hollowmere"},{n:60,id:"RIk2oLxDVRc",ts:1782298821,r:"forest",name:"The Glimmerwood of Hollowmere"},{n:61,id:"KItwZd8VvPE",ts:1782457534,r:"town",name:"The Winterhearth of Hollowmere"},{n:62,id:"AQUFpX-1v-U",ts:1782635421,r:"fields",name:"The Lavender Duskfields Beyond Hollowmere"},{n:63,id:"AgF8hI1B-gI",ts:1782692023,r:"town",name:"The Copperbell Court of Hollowmere"},{n:64,id:"bCMi1OsW_6M",ts:1782860756,r:"sacred",name:"The Moonveil Circle of Hollowmere"},{n:65,id:"bMIVo2Tydcc",ts:1782950271,r:"highland",name:"The Skybridge Sanctum of Hollowmere"},{n:66,id:"alL4egUYQLE",ts:1783030930,r:"town",name:"The Rainkeeper's Map Room of Hollowmere"},{n:67,id:"ikYeO1qwfH8",ts:1783259392,r:"water",name:"The Seacliff Waystation of Hollowmere"},{n:68,id:"DJB_kJ7qdow",d:"2026-07-08",r:"forest",name:"The Mossglass Conservatory of Hollowmere"},{n:69,id:"MiiTXCGx9e8",d:"2026-07-09",r:"highland",name:"The Goldenleaf Crossing of Hollowmere"},{n:70,id:"A0iLcM8eReE",d:"2026-07-13",r:"water",name:"The Duskpool Bathhouse of Hollowmere"},{n:71,id:"cbOoGMDyLNo",d:"2026-07-14",r:"forest",name:"The Rainy Forest Refuge of Hollowmere"},{n:72,id:"9QEEbqZHzH4",d:"2026-07-17",r:"highland",name:"The First Gate of Hollowmere"},{n:73,id:"_Lts7p3QbgM",d:"2026-07-18",r:"water",name:"Where the Star River Leads"},{n:74,id:"S6J7JxJ8qxM",d:"2026-07-22",r:"forest",name:"The Hearth Beyond the Rainy Pines"},{n:75,id:"rxHqSTO6ZFc",d:"2026-07-24",r:"water",name:"The Lantern Keeper of Mistwood Bridge"},{n:76,id:"UrrZ9SYQVzQ",d:"2026-07-28",r:"fields",name:"The Rainlit Village of Silverpine River"},{n:77,id:"1MpncAp9I_4",d:"2026-07-29",r:"town",name:"The Seven Lantern Inn"},{n:78,id:"vQWQRI6rrj0",d:"2026-07-30",r:"sacred",name:"The Hidden Rowan Shrine"},{n:79,id:"2au-44PRRiM",d:"2026-08-02",r:"water",name:"The Moonroot Grotto"},{n:80,id:"ss-gbT45_uU",d:"2026-08-05",r:"town",name:"The Emberfiddle Tavern"},{n:81,id:"zltElhVcoPM",d:"2026-08-08",r:"sacred",name:"The Rainbell Abbey"},{n:82,id:"7rkW2Cj5nK4",d:"2026-08-11",r:"sacred",name:"The Rainbound Orrery"},{n:83,id:"0vFtKtxKOKU",d:"2026-08-13",r:"library",state:"scheduled",name:"The Silver Quill Scriptorium"}
+].map(p=>({...p,pos:POS[p.n],layer:"surface"}));
+const ECHOES=[
+ {n:28,layer:"sky",r:"asterwake",pos:[430,520]},{n:39,layer:"sky",r:"asterwake",pos:[560,420]},{n:40,layer:"sky",r:"raincrown",pos:[850,265]},{n:47,layer:"sky",r:"raincrown",pos:[1055,195]},{n:65,layer:"sky",r:"cloudstep",pos:[1190,620]},{n:72,layer:"sky",r:"cloudstep",pos:[1340,500]},{n:73,layer:"sky",r:"starstream",pos:[830,720]},{n:82,layer:"sky",r:"starstream",pos:[1030,610]},
+ {n:6,layer:"deep",r:"bluerain",pos:[825,300]},{n:9,layer:"deep",r:"glasswater",pos:[430,650]},{n:22,layer:"deep",r:"bluerain",pos:[980,410]},{n:46,layer:"deep",r:"glasswater",pos:[590,720]},{n:48,layer:"deep",r:"runetide",pos:[1130,730]},{n:55,layer:"deep",r:"bluerain",pos:[850,520]},{n:67,layer:"deep",r:"runetide",pos:[1310,630]},{n:79,layer:"deep",r:"moonroot",pos:[345,380]}
 ];
-
-const SVGNS = "http://www.w3.org/2000/svg";
-const $ = s => document.querySelector(s);
-const el = (t, attrs) => { const e = document.createElementNS(SVGNS, t);
-  for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-
-/* ---- region auras & labels ---- */
-(function(){
-  const g = $("#auras");
-  for (const key in REGIONS) {
-    const r = REGIONS[key];
-    const a = el("ellipse", {cx:r.cx, cy:r.cy, rx:r.rx*1.06, ry:r.ry*1.12,
-      fill:r.color, opacity:.075, filter:"url(#soft)", class:"region-visual", "data-region":key});
-    g.appendChild(a);
-    const ring = el("ellipse", {cx:r.cx, cy:r.cy, rx:r.rx*1.02, ry:r.ry*1.06, fill:"none",
-      stroke:r.color, "stroke-width":.8, "stroke-dasharray":"1 6", opacity:.3,
-      class:"region-visual", "data-region":key});
-    g.appendChild(ring);
-    const ly = r.cy - r.ry*1.12 - 10;
-    const t = el("text", {x:r.cx, y:ly, class:"region-label region-visual", "data-region":key}); t.textContent = r.label;
-    const t2 = el("text", {x:r.cx, y:ly+15, class:"region-label-jp region-visual", "data-region":key}); t2.textContent = r.jp;
-    g.appendChild(t); g.appendChild(t2);
-  }
-})();
-
-/* ---- marker placement: phyllotaxis inside each region ellipse ---- */
-(function(){
-  const byRegion = {};
-  PLACES.forEach(p => (byRegion[p.r] = byRegion[p.r] || []).push(p));
-  const GA = Math.PI * (3 - Math.sqrt(5));
-  for (const key in byRegion) {
-    const reg = REGIONS[key], list = byRegion[key], N = list.length;
-    list.forEach((p, i) => {
-      const rr = Math.sqrt((i + 0.62) / N) * 0.86, th = i * GA;
-      p.x = reg.cx + reg.rx * rr * Math.cos(th);
-      p.y = reg.cy + reg.ry * rr * Math.sin(th);
-    });
-  }
-})();
-
-/* ---- draw markers ---- */
-const tip = $("#tip"), tipimg = $("#tipimg"), tipep = $("#tipep"),
-      tipname = $("#tipname"), tipmeta = $("#tipmeta");
-const fmtDate = p => new Date(p.d ? `${p.d}T12:00:00+09:00` : p.ts*1000).toLocaleDateString("ja-JP",
-  {year:"numeric", month:"long", day:"numeric"});
-const mobilePlaceCard = $("#mobile-place-card"), mobilePlaceEp = $("#mobile-place-ep"),
-      mobilePlaceName = $("#mobile-place-name"), mobilePlaceMeta = $("#mobile-place-meta"),
-      mobilePlaceLink = $("#mobile-place-link"), mobilePlaceClose = $("#mobile-place-close");
-const isMobileInteraction = () => matchMedia("(max-width:560px), (hover:none), (pointer:coarse)").matches;
-
-function showMobilePlace(p, reg) {
-  mobilePlaceEp.textContent = `Episode ${p.n} · ${p.state === "scheduled" ? "Scheduled" : reg.label}`;
-  mobilePlaceName.textContent = p.name;
-  mobilePlaceMeta.textContent = p.state === "scheduled"
-    ? `${fmtDate(p)} 公開予定。公開後、この灯りから旅へ出られます。`
-    : `${fmtDate(p)} 公開。下のボタンからこの場所の音楽へ。`;
-  mobilePlaceLink.href = "https://youtu.be/" + p.id;
-  mobilePlaceCard.hidden = false;
-  requestAnimationFrame(() => mobilePlaceCard.scrollIntoView({
-    behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block:"nearest"
-  }));
-}
-mobilePlaceClose.addEventListener("click", () => { mobilePlaceCard.hidden = true; });
-
-(function(){
-  const g = $("#markers");
-  PLACES.forEach(p => {
-    const reg = REGIONS[p.r];
-    const m = el("g", {class:`marker${p.state === "scheduled" ? " scheduled" : ""}`,
-      transform:`translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`, tabindex:"0", role:"link",
-      "aria-label":`Episode ${p.n}${p.state === "scheduled" ? " scheduled" : ""}: ${p.name}`});
-    m.dataset.region = p.r;
-    const hit = el("circle", {r:isMobileInteraction() ? 34 : 13, fill:"transparent", "pointer-events":"all"});
-    const halo = el("circle", {r:11, fill:reg.color, opacity:.16, class:"halo"});
-    const core = el("circle", {r:7, fill:reg.color, stroke:"#0d1526",
-      "stroke-width":1, class:"core", filter:"url(#glow)"});
-    const num = el("text", {y:2.6}); num.textContent = p.n;
-    m.appendChild(hit); m.appendChild(halo); m.appendChild(core); m.appendChild(num);
-
-    m.addEventListener("mouseenter", ev => {
-      core.setAttribute("r", 10); halo.setAttribute("opacity", .32);
-      tipep.textContent = `Episode ${p.n} · ${p.state === "scheduled" ? "Scheduled" : reg.label}`;
-      tipname.textContent = p.name;
-      tipmeta.textContent = p.state === "scheduled"
-        ? `${fmtDate(p)} 公開予定 · クリックで待機ページへ →`
-        : `${fmtDate(p)} 公開 · クリックでこの場所を訪れる →`;
-      tipimg.src = `https://i.ytimg.com/vi/${p.id}/mqdefault.jpg`; tipimg.style.display = "block";
-      tip.style.display = "block"; moveTip(ev);
-    });
-    m.addEventListener("mousemove", moveTip);
-    m.addEventListener("mouseleave", () => {
-      core.setAttribute("r", 7); halo.setAttribute("opacity", .16); tip.style.display = "none";
-    });
-    const travel = () => window.open("https://youtu.be/" + p.id, "_blank", "noopener");
-    m.addEventListener("click", ev => {
-      if (isMobileInteraction()) { ev.preventDefault(); showMobilePlace(p, reg); }
-      else travel();
-    });
-    m.addEventListener("keydown", ev => {
-      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); travel(); }
-    });
-    g.appendChild(m);
-  });
-  function moveTip(ev){
-    const pad = 18, w = 262, h = 230;
-    let x = ev.clientX + pad, y = ev.clientY + pad;
-    if (x + w > innerWidth)  x = ev.clientX - w - pad;
-    if (y + h > innerHeight) y = ev.clientY - h - pad;
-    tip.style.left = x + "px"; tip.style.top = y + "px";
-  }
-})();
-
-/* ---- legend + filter ---- */
-(function(){
-  const rows = $("#legrows"), map = $("#map"), stage = $("#stage"), reset = $("#reset-view");
-  const FULL_VIEW = [0, 0, 1600, 1000];
-  let active = null;
-  let viewAnimation = 0;
-  const counts = {};
-  PLACES.forEach(p => counts[p.r] = (counts[p.r] || 0) + 1);
-
-  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  function regionView(r) {
-    let w = r.rx * 2.8, h = r.ry * 2.8;
-    const ratio = 1.6;
-    if (w / h < ratio) w = h * ratio; else h = w / ratio;
-    w = Math.min(w, 1520); h = Math.min(h, 950);
-    return [clamp(r.cx - w/2, 0, 1600 - w), clamp(r.cy - h/2, 0, 1000 - h), w, h];
-  }
-  function animateView(target) {
-    cancelAnimationFrame(viewAnimation);
-    const from = map.getAttribute("viewBox").split(/\s+/).map(Number);
-    const start = performance.now();
-    const duration = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 680;
-    function frame(now) {
-      const raw = duration ? Math.min(1, (now - start) / duration) : 1;
-      const eased = raw < .5 ? 4*raw*raw*raw : 1 - Math.pow(-2*raw + 2, 3)/2;
-      const current = from.map((v, i) => v + (target[i] - v) * eased);
-      map.setAttribute("viewBox", current.map(v => v.toFixed(2)).join(" "));
-      if (raw < 1) viewAnimation = requestAnimationFrame(frame);
-    }
-    viewAnimation = requestAnimationFrame(frame);
-  }
-  function setRegion(key) {
-    active = key;
-    const focused = active !== null;
-    stage.classList.toggle("zoomed", focused);
-    reset.hidden = !focused;
-    tip.style.display = "none";
-    mobilePlaceCard.hidden = true;
-    document.querySelectorAll(".leg-row").forEach(rw => {
-      rw.setAttribute("aria-pressed", String(active === rw.dataset.key));
-      rw.classList.toggle("dimmed", focused && rw.dataset.key !== active);
-    });
-    document.querySelectorAll(".marker").forEach(mk =>
-      mk.classList.toggle("dimmed", focused && mk.dataset.region !== active));
-    document.querySelectorAll(".region-visual").forEach(rv =>
-      rv.classList.toggle("dimmed", focused && rv.dataset.region !== active));
-    animateView(focused ? regionView(REGIONS[active]) : FULL_VIEW);
-  }
-
-  for (const key in REGIONS) {
-    const r = REGIONS[key];
-    const row = document.createElement("button");
-    row.type = "button";
-    row.className = "leg-row"; row.dataset.key = key;
-    row.setAttribute("aria-pressed", "false");
-    row.innerHTML = `<span class="leg-dot" style="background:${r.color};color:${r.color}"></span>` +
-      `<span>${r.label}<br><small style="opacity:.6">${r.jp}</small></span>` +
-      `<span class="leg-count">${counts[key] || 0}</span>`;
-    row.addEventListener("click", () => setRegion(active === key ? null : key));
-    rows.appendChild(row);
-  }
-  reset.addEventListener("click", () => setRegion(null));
-  document.addEventListener("keydown", ev => {
-    if (ev.key === "Escape" && active !== null) setRegion(null);
-  });
-  const scheduled = PLACES.filter(p => p.state === "scheduled").length;
-  const published = PLACES.length - scheduled;
-  $("#counter").textContent = `${published} places charted · ${scheduled} destination scheduled · 83 total`;
-})();
+const LORE={surface:"この灯りは、Hollowmereを流れる虚ろの水脈に刻まれた旅の記憶です。",sky:"地上の物語が星河を渡り、天空でEchoとして共鳴しています。",deep:"深き水鏡は地上の記憶を映し、古い星水の中へ静かに保存します。"};
+const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg";const app=$("#app"),svg=$("#atlas-map"),mapImage=$("#map-image"),nodes=$("#nodes"),routeLayer=$("#routes"),lumaPath=$("#luma-path"),lumaGuide=$("#luma-guide"),lumaImage=$("#luma-image"),lumaMotion=$("#luma-motion"),announcer=$("#announcer");
+const mqReduce=matchMedia("(prefers-reduced-motion: reduce)");let state={layer:"surface",region:null,place:null,motion:!mqReduce.matches};let currentVB=[0,0,1600,1000],viewAnimation=0,lastFocus=null,lumaLoaded=false;const visited=new Set(JSON.parse(localStorage.getItem("hollowmereVisited")||"[]"));
+function realm(){return REALMS[state.layer]}function region(){return state.region&&realm().regions[state.region]}function byEpisode(n){return PLACES.find(p=>p.n===+n)}function displayPlaces(){if(state.layer==="surface")return PLACES;return ECHOES.filter(e=>e.layer===state.layer).map(e=>({...byEpisode(e.n),...e,echo:true}))}
+function fmtDate(p){return new Date(p.d?`${p.d}T12:00:00+09:00`:p.ts*1000).toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"})}
+function hashState(push=true){const q=new URLSearchParams;q.set("layer",state.layer);if(state.region)q.set("region",state.region);if(state.place)q.set("place",state.place);const url=`#${q}`;(push?history.pushState:history.replaceState).call(history,{},"",url)}
+function loadHash(){const q=new URLSearchParams(location.hash.slice(1));let layer=REALMS[q.get("layer")]?q.get("layer"):"surface",place=+q.get("place")||null,reg=q.get("region");if(place){const echo=ECHOES.find(e=>e.n===place&&e.layer===layer);if(layer==="surface"){reg=byEpisode(place)?.r||null}else if(echo){reg=echo.r}else{layer="surface";reg=byEpisode(place)?.r||null}}if(!REALMS[layer].regions[reg])reg=null;state={...state,layer,region:reg,place};}
+function create(tag,attrs={}){const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e}
+function countFor(r){return displayPlaces().filter(p=>p.r===r).length}function targetVB(){return state.region?realm().regions[state.region].view:[0,0,1600,1000]}
+function setViewBox(to,animate=true){cancelAnimationFrame(viewAnimation);const from=currentVB.slice();if(!animate||!state.motion){currentVB=to.slice();svg.setAttribute("viewBox",to.join(" "));return updateLumaSize()}const start=performance.now(),dur=420;const tick=now=>{const t=Math.min(1,(now-start)/dur),e=1-Math.pow(1-t,3);currentVB=from.map((v,i)=>v+(to[i]-v)*e);svg.setAttribute("viewBox",currentVB.join(" "));updateLumaSize();if(t<1)viewAnimation=requestAnimationFrame(tick)};viewAnimation=requestAnimationFrame(tick)}
+function mapScale(){const vb=targetVB(),sx=Math.max(svg.clientWidth,320)/vb[2],sy=Math.max(svg.clientHeight,240)/vb[3];return Math.min(sx,sy)}function hitRadius(){return 22/mapScale()}function textUnit(px){return px/mapScale()}
+function renderRegions(){nodes.replaceChildren();for(const[key,r]of Object.entries(realm().regions)){const count=countFor(key),g=create("g",{class:"region-node",role:"button",tabindex:"0","aria-label":`${r.jp}、${count}地点`,style:`color:${r.color}`});g.dataset.region=key;const hr=hitRadius(),vr=Math.max(hr*.8,textUnit(29));g.append(create("circle",{class:"node-hit",cx:r.cx,cy:r.cy,r:Math.max(hr,vr)}),create("circle",{class:"node-ring",cx:r.cx,cy:r.cy,r:vr,stroke:r.color}));const n=create("text",{class:"region-count",x:r.cx,y:r.cy,"font-size":textUnit(15)});n.textContent=count||"?";const t=create("text",{class:"region-name",x:r.cx,y:r.cy+vr+textUnit(18),"font-size":textUnit(12)});t.textContent=r.jp;const sub=create("text",{class:"region-sub",x:r.cx,y:r.cy+vr+textUnit(32),"font-size":textUnit(9)});sub.textContent=count?`${count} ${state.layer==="surface"?"destinations":"echoes"}`:"Uncharted";g.append(n,t,sub);activate(g,()=>selectRegion(key));nodes.append(g)}}
+function renderPlaces(){nodes.replaceChildren();const list=displayPlaces().filter(p=>p.r===state.region);const r=region(),hr=hitRadius(),vr=Math.max(textUnit(13),14);for(const p of list){const classes=["place-node",p.echo?"echo":"",visited.has(p.n)?"visited":"",p.n===state.place?"selected":"",p.n===83?"latest":""].filter(Boolean).join(" "),g=create("g",{class:classes,role:"button",tabindex:p.n===state.place||(!state.place&&p===list[0])?"0":"-1","aria-label":`Episode ${p.n}、${p.name}`,style:`color:${r.color}`});g.dataset.place=p.n;g.append(create("circle",{class:"node-hit",cx:p.pos[0],cy:p.pos[1],r:hr}),create("circle",{class:"node-ring",cx:p.pos[0],cy:p.pos[1],r:vr,stroke:r.color}));const t=create("text",{class:"place-no",x:p.pos[0],y:p.pos[1]+textUnit(.5),"font-size":textUnit(10)});t.textContent=p.echo?`↟${p.n}`:p.n;const title=create("title");title.textContent=`Episode ${p.n} — ${p.name}`;g.append(t,title);activate(g,()=>openPlace(p.n,g));nodes.append(g)}if(!list.length){const t=create("text",{x:region().cx,y:region().cy,fill:"#fff","text-anchor":"middle","font-size":textUnit(18),class:"unexplored"});t.textContent="Uncharted — まだ灯りのない未踏域";nodes.append(t)}}
+function activate(el,fn){el.addEventListener("click",fn);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fn()}else if(e.key.startsWith("Arrow")&&state.region){moveMarkerFocus(el,e.key)}})}
+function moveMarkerFocus(el,key){const all=[...nodes.querySelectorAll(".place-node")];if(!all.length)return;const i=all.indexOf(el),next=key==="ArrowLeft"||key==="ArrowUp"?i-1:i+1;const target=all[(next+all.length)%all.length];all.forEach(x=>x.tabIndex=-1);target.tabIndex=0;target.focus()}
+function renderRoutes(){routeLayer.replaceChildren();if(state.layer==="surface")return;const p=create("path",{d:realm().path,fill:"none",stroke:state.layer==="sky"?"#bfe7ff":"#61ebe4","stroke-width":"3","stroke-dasharray":"10 15",opacity:".45","vector-effect":"non-scaling-stroke"});routeLayer.append(p)}
+function updateAspect(){svg.setAttribute("preserveAspectRatio","xMidYMid meet")}
+function render(){updateAspect();app.dataset.layer=state.layer;document.querySelectorAll(".realm-tab").forEach(b=>b.setAttribute("aria-pressed",b.dataset.layer===state.layer));const R=realm();$("#realm-kicker").textContent=R.label;$("#realm-heading").textContent=R.jp;$("#realm-copy").textContent=R.copy;$("#realm-note").textContent=R.note;$("#overview").hidden=!state.region;renderRegionButtons();state.region?renderPlaces():renderRegions();renderRoutes();setViewBox(targetVB());updateMotion();if(state.place)showDetail(byEpisode(state.place));else closeDetail(false)}
+function renderRegionButtons(){const box=$("#region-list");box.replaceChildren();for(const[k,r]of Object.entries(realm().regions)){const count=countFor(k),b=document.createElement("button");b.className="region-button";b.style.setProperty("--c",r.color);b.setAttribute("aria-pressed",String(state.region===k));b.innerHTML=`<em>${count||"未踏"}</em><b>${r.jp}</b><small>${r.label}</small>`;b.onclick=()=>selectRegion(k);box.append(b)}}
+function selectLayer(layer,push=true){if(state.layer===layer&&!state.region)return;state.layer=layer;state.region=null;state.place=null;switchMap();if(push)hashState();render();announcer.textContent=`${realm().jp}へ移動しました`}
+function switchMap(){mapImage.classList.add("loading");mapImage.dataset.fallback="0";mapImage.setAttribute("href",realm().asset);mapImage.addEventListener("load",()=>mapImage.classList.remove("loading"),{once:true});lumaPath.setAttribute("d",realm().path);if(state.motion&&lumaLoaded){try{lumaMotion.beginElement()}catch{}}}
+mapImage.addEventListener("error",()=>{if(mapImage.dataset.fallback!=="1"){mapImage.dataset.fallback="1";mapImage.setAttribute("href",realm().fallback)}});
+function selectRegion(key,push=true){state.region=key;state.place=null;if(push)hashState();render();announcer.textContent=`${region().jp}を表示。${countFor(key)}地点あります`}
+function openPlace(n,source=null,push=true){const p=byEpisode(n);if(!p)return;lastFocus=source||document.activeElement;state.place=n;const echo=state.layer!=="surface"&&ECHOES.find(e=>e.n===n&&e.layer===state.layer);if(!state.region)state.region=echo?.r||p.r;if(push)hashState();render();requestAnimationFrame(()=>$("#detail-title").focus())}
+function showDetail(p){const R=realm(),reg=region()||R.regions[p.r];$("#detail-ep").textContent=`Episode ${p.n} · ${p.state==="scheduled"?"Scheduled":state.layer==="surface"?"Destination":"Echo Resonance"}`;$("#detail-title").textContent=p.name;$("#detail-meta").textContent=`${fmtDate(p)} · ${R.jp} / ${reg?.jp||""}`;$("#detail-lore").textContent=LORE[state.layer];$("#detail-image").src=`https://i.ytimg.com/vi/${p.id}/hqdefault.jpg`;$("#detail-image").alt=`${p.name} のYouTubeサムネイル`;$("#youtube").href=`https://youtu.be/${p.id}`;$("#detail").dataset.open="true";$("#detail").setAttribute("aria-hidden","false")}
+function closeDetail(update=true){const d=$("#detail");d.dataset.open="false";d.setAttribute("aria-hidden","true");if(update&&state.place){state.place=null;hashState();renderMarkersOnly();lastFocus?.focus?.()}}
+function renderMarkersOnly(){state.region?renderPlaces():renderRegions()}
+function goEpisode(n){const p=byEpisode(n);state.layer="surface";state.region=p.r;state.place=n;switchMap();hashState();render()}
+function updateLumaSize(){const px=textUnit(34),w=px,h=px*2.26;lumaImage.setAttribute("x",-w/2);lumaImage.setAttribute("y",-h/2);lumaImage.setAttribute("width",w);lumaImage.setAttribute("height",h)}
+function ensureLuma(){if(lumaLoaded)return;lumaLoaded=true;lumaImage.setAttribute("href",state.motion?"assets/luma-swim-v4-atlas.webp":"assets/luma-still-v4.png");lumaGuide.setAttribute("visibility","visible");updateMotion()}
+function updateMotion(){const on=state.motion&&!mqReduce.matches;$("#motion-toggle").setAttribute("aria-pressed",String(on));$("#motion-toggle").title=on?"動きを止める":"動きを再開";if(!lumaLoaded)return;lumaImage.setAttribute("href",on?"assets/luma-swim-v4-atlas.webp":"assets/luma-still-v4.png");try{on?lumaMotion.beginElement():lumaMotion.endElement()}catch{}}
+function callLuma(){ensureLuma();const list=displayPlaces(),p=list[Math.floor(Math.random()*list.length)];state.region=p.r;state.place=p.n;hashState();render();announcer.textContent=`LumaがEpisode ${p.n}へ案内します`}
+function search(q){q=q.trim().toLowerCase();const box=$("#search-results");if(!q){box.dataset.open="false";return}const terms=q.split(/\s+/),results=PLACES.filter(p=>{const r=REALMS.surface.regions[p.r],hay=`${p.n} episode ${p.name} ${p.r} ${r.label} ${r.jp}`.toLowerCase();return terms.every(t=>hay.includes(t))}).slice(0,8);box.replaceChildren();if(!results.length){box.innerHTML='<div class="search-empty">まだ地図にない言葉みたいや。別の題名や番号を試してな。</div>'}for(const p of results){const b=document.createElement("button");b.className="search-result";b.setAttribute("role","option");b.innerHTML=`<b>EPISODE ${p.n} · ${REALMS.surface.regions[p.r].jp}</b><span>${p.name}</span>`;b.onclick=()=>{$("#search").value="";box.dataset.open="false";goEpisode(p.n)};box.append(b)}box.dataset.open="true"}
+document.querySelectorAll(".realm-tab").forEach(b=>b.onclick=()=>selectLayer(b.dataset.layer));$("#overview").onclick=()=>{state.region=null;state.place=null;hashState();render()};$("#latest").onclick=()=>goEpisode(Math.max(...PLACES.map(p=>p.n)));$("#call-luma").onclick=$("#luma-map").onclick=callLuma;$("#motion-toggle").onclick=()=>{state.motion=!state.motion;updateMotion()};$("#search").addEventListener("input",e=>search(e.target.value));$("#search").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.value="";search("")}});$("#detail-close").onclick=()=>closeDetail();$("#prev-place").onclick=()=>goEpisode(state.place<=1?PLACES.length:state.place-1);$("#next-place").onclick=()=>goEpisode(state.place>=PLACES.length?1:state.place+1);$("#youtube").addEventListener("click",()=>{visited.add(state.place);localStorage.setItem("hollowmereVisited",JSON.stringify([...visited]));renderMarkersOnly()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if($("#search-results").dataset.open==="true"){search("");return}if(state.place){closeDetail();return}if(state.region){state.region=null;hashState();render()}});addEventListener("popstate",()=>{loadHash();switchMap();render()});addEventListener("resize",()=>{updateAspect();state.region?renderPlaces():renderRegions();updateLumaSize()});mqReduce.addEventListener?.("change",updateMotion);
+loadHash();switchMap();render();hashState(false);setTimeout(ensureLuma,1200);
 </script>
 </body>
 </html>
