@@ -103,7 +103,7 @@ const PLACES=[
 PLACES.push({n:84,id:"2alcLfAfO0o",d:"2026-08-15",r:"highland",name:"The Long Rain of Hollowmere",pos:POS[84],layer:"surface"});
 PLACES.push({n:88,id:"0eURDRZhDJk",d:"2026-08-26",r:"water",state:"scheduled",name:"The Lantern Ferryhouse of Hollowmere",pos:POS[88],layer:"surface"});
 POS[93]=[1150,900];
-PLACES.push({n:93,id:"OpCsMgi9qD8",d:"2026-09-12",r:"water",state:"scheduled",name:"The Raincarved Rune Gate of Hollowmere",pos:POS[93],layer:"surface"});
+PLACES.push({n:93,id:"OpCsMgi9qD8",d:"2026-09-12",r:"water",state:"published",name:"The Raincarved Rune Gate of Hollowmere",pos:POS[93],layer:"surface"});
 const LORE={surface:"この灯りは、Hollowmereを流れる虚ろの水脈に刻まれた旅の記憶です。"};
 const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg";const app=$("#app"),stage=$("#map-main"),svg=$("#atlas-map"),mapImage=$("#map-image"),nodes=$("#nodes"),routeLayer=$("#routes"),lumaPath=$("#luma-path"),lumaGuide=$("#luma-guide"),lumaImage=$("#luma-image"),lumaMotion=$("#luma-motion"),announcer=$("#announcer"),gestureHint=$("#gesture-hint");
 const mqReduce=matchMedia("(prefers-reduced-motion: reduce)");let state={layer:"surface",region:null,place:null,motion:!mqReduce.matches};let currentVB=[0,0,1600,1000],viewAnimation=0,lastFocus=null,lumaLoaded=false,wheelTimer=0,gestureMoved=false,suppressMapClick=false,pinchDistance=0,pinchMid=null,lastAtlasUrl="#layer=surface",exitGuardReady=false,exitingAtlas=false;const pointers=new Map(),visited=new Set(JSON.parse(localStorage.getItem("hollowmereVisited")||"[]"));
