@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071927">
-<meta name="description" content="Lumaと巡る、Sparkling Hollowの三界ファンタジー世界地図。地上・天空・海中から90の物語を探索できます。">
+<meta name="description" content="Lumaと巡る、Sparkling Hollowの三界ファンタジー世界地図。地上・天空・海中から91の物語を探索できます。">
 <meta property="og:type" content="website"><meta property="og:title" content="Hollowmere Atlas — 三界を巡る生きた地図"><meta property="og:description" content="Lumaとともに、地上・天空・深水の三界と85の物語を探索しよう。"><meta property="og:image" content="https://futsalife24-bot.github.io/hollowmere-atlas/assets/hollowmere-atlas-og-v4.jpg"><meta name="twitter:card" content="summary_large_image">
 <title>Hollowmere Atlas — 三界を巡る生きた地図</title>
 <style>
@@ -44,7 +44,7 @@ button,input,a{font:inherit}.skip{position:fixed;z-index:1000;top:8px;left:8px;t
   <header class="topbar">
     <div class="brand"><div class="eyebrow">Sparkling Hollow · Living Atlas</div><h1>Hollowmere <span>Atlas</span></h1></div>
     <nav class="realm-tabs" aria-label="世界層">
-      <button class="realm-tab" data-layer="surface" aria-pressed="true">地上界<small>90 destinations</small></button>
+      <button class="realm-tab" data-layer="surface" aria-pressed="true">地上界<small>91 destinations</small></button>
       <button class="realm-tab" data-layer="sky" aria-pressed="false">天空界<small>未踏</small></button>
       <button class="realm-tab" data-layer="deep" aria-pressed="false">深水界<small>未踏</small></button>
     </nav>
@@ -89,7 +89,7 @@ button,input,a{font:inherit}.skip{position:fixed;z-index:1000;top:8px;left:8px;t
 <script>
 "use strict";
 const REALMS={
- surface:{label:"Hollowmere Realm",jp:"ホロウミア地上界",asset:"assets/hollowmere-surface-map-v4.webp",fallback:"assets/hollowmere-world-map.png",copy:"森・書庫・聖域・町を灯りで結ぶ、生きている地上界。",note:"90の物語が地図に灯っています。地域を選ぶと個別の灯りが現れます。",path:"M210 780 C420 630 400 340 670 340 S1050 620 1400 320 S1250 860 820 830 S360 900 210 780",regions:{
+ surface:{label:"Hollowmere Realm",jp:"ホロウミア地上界",asset:"assets/hollowmere-surface-map-v4.webp",fallback:"assets/hollowmere-world-map.png",copy:"森・書庫・聖域・町を灯りで結ぶ、生きている地上界。",note:"91の物語が地図に灯っています。地域を選ぶと個別の灯りが現れます。",path:"M210 780 C420 630 400 340 670 340 S1050 620 1400 320 S1250 860 820 830 S360 900 210 780",regions:{
   town:{label:"Hollowmere Town",jp:"ホロウミアの町",color:"#ffb347",cx:800,cy:560,view:[575,385,450,350]},forest:{label:"The Glimmerwood",jp:"きらめきの森",color:"#6fd08c",cx:360,cy:340,view:[80,120,560,440]},library:{label:"Athenaeum District",jp:"大書庫街",color:"#d4af37",cx:500,cy:700,view:[285,545,430,310]},sacred:{label:"Moonveil Reaches",jp:"月帳の聖域",color:"#b48ce8",cx:950,cy:255,view:[620,80,660,350]},highland:{label:"Windroad Highlands",jp:"風渡り高地",color:"#e8927c",cx:1345,cy:470,view:[1130,270,430,400]},fields:{label:"Duskfields Beyond",jp:"黄昏の野",color:"#e08cc0",cx:1225,cy:755,view:[995,610,460,300]},water:{label:"The Mirrorcoast",jp:"鏡の海岸",color:"#6cc3e0",cx:820,cy:868,view:[360,760,920,230]}}},
  sky:{label:"The Starward Veil",jp:"星渡りの天蓋",asset:"assets/hollowmere-starward-map-v1.webp",fallback:"assets/hollowmere-starward-map-v1-master.png",copy:"星河が空へ逆流し、雨冠で地上へ還る浮島の天蓋。",note:"まだ作品の灯りはありません。いつか天空を舞台にした物語が生まれた時、その場所が正式に地図へ刻まれます。",path:"M180 700 C410 620 380 420 610 370 S880 760 1080 650 S1410 480 1310 300 S920 180 720 260 S420 250 180 700",regions:{
   asterwake:{label:"Asterwake Isles",jp:"星航の浮島群",color:"#a8dcff",cx:496,cy:480,view:[210,270,570,420]},raincrown:{label:"Raincrown Heights",jp:"雨冠の高天",color:"#d8d5ff",cx:960,cy:240,view:[665,70,590,360]},cloudstep:{label:"Cloudstep Thresholds",jp:"雲段の門境",color:"#f1a978",cx:1248,cy:580,view:[1010,345,480,470]},starstream:{label:"Starstream Expanse",jp:"星河の天流",color:"#66e6e0",cx:928,cy:660,view:[650,470,560,400]}}},
@@ -109,9 +109,11 @@ PLACES.push({n:94,id:"RDn0GMzqJNk",d:"2026-09-16",r:"water",state:"published",na
 POS[95]=[340,620];
 PLACES.push({n:95,id:"V8Ndpy_KQAU",d:"2026-09-19",r:"library",state:"published",name:"The Lanternbindery of Hollowmere",pos:POS[95],layer:"surface"});
 POS[96]=[620,580];
-PLACES.push({n:96,id:"PbWdPC9rU_8",d:"2026-09-23",r:"library",state:"scheduled",name:"The Astra Lantern Garden of Hollowmere",pos:POS[96],layer:"surface"});
+PLACES.push({n:96,id:"PbWdPC9rU_8",d:"2026-09-23",r:"library",state:"published",name:"The Astra Lantern Garden of Hollowmere",pos:POS[96],layer:"surface"});
 POS[97]=[348,335];
 PLACES.push({n:97,id:"ncy9aUiZMT0",d:"2026-09-26",r:"forest",state:"scheduled",name:"The Fernwater Map Pavilion of Hollowmere",pos:POS[97],layer:"surface"});
+POS[98]=[650,790];
+PLACES.push({n:98,id:"2ApQRytEyVk",d:"2026-09-30",r:"library",state:"scheduled",name:"The Rainpane Reading Alcove of Hollowmere",pos:POS[98],layer:"surface"});
 const LORE={surface:"この灯りは、Hollowmereを流れる虚ろの水脈に刻まれた旅の記憶です。"};
 const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg";const app=$("#app"),stage=$("#map-main"),svg=$("#atlas-map"),mapImage=$("#map-image"),nodes=$("#nodes"),routeLayer=$("#routes"),lumaPath=$("#luma-path"),lumaGuide=$("#luma-guide"),lumaImage=$("#luma-image"),lumaMotion=$("#luma-motion"),announcer=$("#announcer"),gestureHint=$("#gesture-hint");
 const mqReduce=matchMedia("(prefers-reduced-motion: reduce)");let state={layer:"surface",region:null,place:null,motion:!mqReduce.matches};let currentVB=[0,0,1600,1000],viewAnimation=0,lastFocus=null,lumaLoaded=false,wheelTimer=0,gestureMoved=false,suppressMapClick=false,pinchDistance=0,pinchMid=null,lastAtlasUrl="#layer=surface",exitGuardReady=false,exitingAtlas=false;const pointers=new Map(),visited=new Set(JSON.parse(localStorage.getItem("hollowmereVisited")||"[]"));
